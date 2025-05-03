@@ -1,0 +1,2126 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <!-- 使用本地Chart.js库 (UMD版本) -->
+    <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}" defer></script>
+    <!-- 添加 ECharts 库 -->
+    <script src="{{ url_for('static', filename='js/echarts.js') }}" defer></script>
+
+
+{% endblock %}
+
+{% block title %}区块链助记词安全性测试系统{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-brain me-2"></i>助记词生成工具</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="mnemonicTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="generate-tab" data-bs-toggle="tab"
+                                    data-bs-target="#generate" type="button" role="tab"
+                                    aria-controls="generate" aria-selected="true">
+                                <i class="fas fa-random me-2"></i>生成助记词
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="validate-tab" data-bs-toggle="tab"
+                                    data-bs-target="#validate" type="button" role="tab"
+                                    aria-controls="validate" aria-selected="false">
+                                <i class="fas fa-check-circle me-2"></i>验证助记词
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="blockchain-tab" data-bs-toggle="tab"
+                                    data-bs-target="#blockchain" type="button" role="tab"
+                                    aria-controls="blockchain" aria-selected="false">
+                                <i class="fas fa-link me-2"></i>区块链地址
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="mnemonicTabsContent">
+                        <!-- 生成助记词面板 -->
+                        <div class="tab-pane fade show active" id="generate" role="tabpanel"
+                             aria-labelledby="generate-tab">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                本系统仅使用符合<strong>BIP39标准</strong>的助记词词库，确保生成的助记词可用于加密货币钱包和区块链应用。
+                            </div>
+                            <form id="generate-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="word-count">
+                                                <i class="fas fa-hashtag me-2"></i>词语数量
+                                            </label>
+                                            <select class="form-select" id="word-count">
+                                                <option value="12">12个词 (128位熵)</option>
+                                                <option value="15">15个词 (160位熵)</option>
+                                                <option value="18">18个词 (192位熵)</option>
+                                                <option value="21">21个词 (224位熵)</option>
+                                                <option value="24">24个词 (256位熵)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="language">
+                                                <i class="fas fa-language me-2"></i>语言
+                                            </label>
+                                            <select class="form-select" id="language">
+                                                <option value="中文简体">简体中文</option>
+                                                <option value="中文繁体">繁體中文</option>
+                                                <option value="英文">English</option>
+                                                <option value="法语">Français</option>
+                                                <option value="西班牙语">Español</option>
+                                                <option value="意大利语">Italiano</option>
+                                                <option value="日语">日本語</option>
+                                                <option value="韩语">한국어</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <button type="button" id="generate-btn" class="btn btn-primary btn-lg me-5">
+                                        <i class="fas fa-random me-2"></i>生成助记词
+                                    </button>
+                                    <button type="button" id="security-analysis-btn"
+                                            class="btn btn-outline-info btn-lg">
+                                        <i class="fas fa-shield-alt me-2"></i>安全性分析
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div id="result-container" class="mt-4">
+                                <!-- 生成的助记词将显示在这里 -->
+                            </div>
+
+                            <div id="seed-container" class="seed-container" style="display: none;">
+                                <h5><i class="fas fa-key me-2"></i>派生种子 (H)</h5>
+                                <div id="seed-value"></div>
+                            </div>
+
+                            <div class="text-center mt-3" id="copy-container" style="display: none;">
+                                <button id="copy-btn" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-copy me-2"></i>复制助记词
+                                </button>
+                                <button id="copy-seed-btn" class="btn btn-outline-secondary" style="display: none;">
+                                    <i class="fas fa-copy me-2"></i>复制种子
+                                </button>
+                            </div>
+
+                            <div class="mt-4 security-metrics" style="display: none;">
+                                <h4 class="mb-4">助记词安全性分析</h4>
+
+                                <!-- 熵值信息 -->
+                                <div class="entropy-info mb-3">
+                                    <span>熵值: <span id="entropy-value">0</span> 位</span>
+                                    <span>强度: <span id="strength-text">未生成</span></span>
+                                </div>
+
+                                <!-- 强度计量条 -->
+                                <div class="strength-meter mb-4">
+                                    <div id="strength-level" class="strength-level" style="width: 0%;"></div>
+                                </div>
+
+                                <!-- 破解时间估计 -->
+                                <div class="mb-4">
+                                    <strong>估计破解时间: </strong><span id="crack-time">未生成</span>
+                                </div>
+
+                                <!-- 图表容器 - 增加上边距 -->
+                                <div class="row mb-4 mt-5">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="chart-container" style="height: 350px; padding-right: 5px;">
+                                            <div id="entropyDistributionChart" style="width: 100%; height: 100%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="chart-container" style="height: 350px; padding-left: 5px;">
+                                            <div id="crackTimeChart" style="width: 100%; height: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 安全提示 -->
+                                <div class="alert alert-info mt-3">
+                                    <strong>安全提示:</strong>
+                                    <ul>
+                                        <li>12个词的助记词提供约128位熵，24个词提供约256位熵</li>
+                                        <li>您的助记词应当保存在离线环境中，永远不要通过电子方式共享</li>
+                                        <li>使用硬件钱包可以大大提高您的资金安全性</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 验证助记词面板 -->
+                        <div class="tab-pane fade" id="validate" role="tabpanel"
+                             aria-labelledby="validate-tab">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                请输入BIP39标准助记词进行验证。验证成功后将显示派生的种子。
+                            </div>
+
+                            <form id="validate-form">
+                                <div class="form-group">
+                                    <label for="input-mnemonic">
+                                        <i class="fas fa-key me-2"></i>输入助记词
+                                    </label>
+                                    <textarea class="form-control" id="input-mnemonic" rows="3"
+                                              placeholder="请输入空格分隔的助记词，例如：apple banana cherry ..."></textarea>
+                                    <small class="form-text text-muted">
+                                        请确保单词的准确性和顺序，单词间使用空格分隔
+                                    </small>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <label for="validate-language">
+                                        <i class="fas fa-language me-2"></i>助记词语言
+                                    </label>
+                                    <select class="form-select" id="validate-language">
+                                        <option value="中文简体">简体中文</option>
+                                        <option value="中文繁体">繁體中文</option>
+                                        <option value="英文">English</option>
+                                        <option value="法语">Français</option>
+                                        <option value="西班牙语">Español</option>
+                                        <option value="意大利语">Italiano</option>
+                                        <option value="日语">日本語</option>
+                                        <option value="韩语">한국어</option>
+
+                                    </select>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <button type="button" id="validate-btn" class="btn btn-primary">
+                                        <i class="fas fa-check-circle me-2"></i>验证助记词
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div id="validate-result" class="mt-4">
+                                <!-- 验证结果将显示在这里 -->
+                            </div>
+                        </div>
+
+                        <!-- 区块链地址面板 -->
+                        <div class="tab-pane fade" id="blockchain" role="tabpanel"
+                             aria-labelledby="blockchain-tab">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                从助记词生成各种区块链地址，并查询余额和交易记录。请确保您的助记词安全，不要在不信任的环境中输入。
+                            </div>
+
+                            <form id="blockchain-form">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="blockchain-mnemonic">
+                                                <i class="fas fa-key me-2"></i>输入助记词
+                                            </label>
+                                            <textarea class="form-control" id="blockchain-mnemonic" rows="3"
+                                                      placeholder="请输入助记词，单词间用空格分隔"></textarea>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-shield-alt me-1"></i>
+                                                助记词非常重要，请确保在安全的环境中操作
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="blockchain-language">
+                                                <i class="fas fa-language me-2"></i>助记词语言
+                                            </label>
+                                            <select class="form-select" id="blockchain-language">
+                                                <option value="中文简体">简体中文</option>
+                                                <option value="中文繁体">繁體中文</option>
+                                                <option value="英文">English</option>
+                                                <option value="法语">Français</option>
+                                                <option value="西班牙语">Español</option>
+                                                <option value="意大利语">Italiano</option>
+                                                <option value="日语">日本語</option>
+                                                <option value="韩语">한국어</option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="blockchain-passphrase">
+                                                <i class="fas fa-lock me-2"></i>密码(可选)
+                                            </label>
+                                            <input type="password" class="form-control" id="blockchain-passphrase"
+                                                   placeholder="BIP39密码短语(可选)">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="blockchain-count">
+                                                <i class="fas fa-hashtag me-2"></i>每个链生成地址数量
+                                            </label>
+                                            <select class="form-select" id="blockchain-count">
+                                                <option value="1">1个地址</option>
+                                                <option value="3">3个地址</option>
+                                                <option value="5" selected>5个地址</option>
+                                                <option value="10">10个地址</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <label class="mb-2">
+                                            <i class="fas fa-coins me-2"></i>选择区块链
+                                        </label>
+                                        <div id="blockchain-options" class="d-flex flex-wrap gap-2">
+                                            <!-- 区块链选项将动态加载 -->
+                                            <div class="spinner-border spinner-border-sm text-primary me-2"
+                                                 role="status">
+                                                <span class="visually-hidden">加载中...</span>
+                                            </div>
+                                            <span>加载区块链列表...</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <button type="button" id="generate-addresses-btn" class="btn btn-primary">
+                                        <i class="fas fa-cog me-2"></i>生成区块链地址
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div id="blockchain-result" class="mt-4" style="display: none;">
+                                <!-- 区块链地址生成结果 -->
+                                <h4 class="mb-3"><i class="fas fa-address-card me-2"></i>生成的区块链地址</h4>
+
+                                <ul class="nav nav-pills mb-3" id="blockchain-addresses-tabs" role="tablist">
+                                    <!-- 区块链标签页将动态生成 -->
+                                </ul>
+
+                                <div class="tab-content" id="blockchain-addresses-content">
+                                    <!-- 区块链地址内容将动态生成 -->
+                                </div>
+                            </div>
+
+                            <div id="address-query-container" class="mt-5" style="display: none;">
+                                <h4 class="mb-3"><i class="fas fa-search-dollar me-2"></i>查询地址余额与交易</h4>
+
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label for="query-chain">
+                                                <i class="fas fa-project-diagram me-2"></i>选择区块链
+                                            </label>
+                                            <select class="form-select" id="query-chain">
+                                                <!-- 区块链选项将动态生成 -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="form-group">
+                                            <label for="query-address">
+                                                <i class="fas fa-fingerprint me-2"></i>输入地址
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="query-address"
+                                                       placeholder="输入要查询的区块链地址">
+                                                <button class="btn btn-outline-primary" type="button"
+                                                        id="query-address-btn">
+                                                    <i class="fas fa-search me-1"></i>查询
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="address-info-container" class="mt-4" style="display: none;">
+                                    <!-- 地址查询结果将在这里显示 -->
+                                    <ul class="nav nav-tabs" id="address-info-tabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="address-balance-tab"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#address-balance-content" type="button" role="tab"
+                                                    aria-controls="address-balance-content" aria-selected="true">
+                                                <i class="fas fa-wallet me-2"></i>余额信息
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="address-transactions-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#address-transactions-content" type="button"
+                                                    role="tab"
+                                                    aria-controls="address-transactions-content" aria-selected="false">
+                                                <i class="fas fa-exchange-alt me-2"></i>交易历史
+                                            </button>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content mt-3" id="address-info-tab-content">
+                                        <div class="tab-pane fade show active" id="address-balance-content"
+                                             role="tabpanel"
+                                             aria-labelledby="address-balance-tab">
+                                            <!-- 余额信息将在这里显示 -->
+                                            <div id="balance-info-container"></div>
+                                        </div>
+                                        <div class="tab-pane fade" id="address-transactions-content" role="tabpanel"
+                                             aria-labelledby="address-transactions-tab">
+                                            <!-- 交易历史将在这里显示 -->
+                                            <div id="transactions-container">
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <h5 class="mb-0">交易记录</h5>
+                                                    <div>
+                                                        <select id="transaction-limit"
+                                                                class="form-select form-select-sm d-inline-block"
+                                                                style="width: auto;">
+                                                            <option value="5">显示5条</option>
+                                                            <option value="10" selected>显示10条</option>
+                                                            <option value="20">显示20条</option>
+                                                            <option value="50">显示50条</option>
+                                                        </select>
+                                                        <button id="refresh-transactions-btn"
+                                                                class="btn btn-sm btn-outline-primary ms-2">
+                                                            <i class="fas fa-sync-alt me-1"></i>刷新
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div id="transactions-list-container">
+                                                    <div class="text-center my-4">
+                                                        <p>点击"查询交易"按钮获取交易历史</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function () {
+            // 生成按钮点击事件
+            document.getElementById('generate-btn').addEventListener('click', generateMnemonic);
+
+            // 验证按钮点击事件
+            document.getElementById('validate-btn').addEventListener('click', validateMnemonic);
+
+            // 复制按钮点击事件
+            document.getElementById('copy-btn').addEventListener('click', copyMnemonic);
+
+            // 复制种子按钮点击事件
+            document.getElementById('copy-seed-btn').addEventListener('click', copySeed);
+
+            // 加载区块链列表
+            loadBlockchains();
+
+            // 生成区块链地址按钮事件
+            document.getElementById('generate-addresses-btn').addEventListener('click', generateBlockchainAddresses);
+
+            // 查询地址按钮事件
+            document.getElementById('query-address-btn').addEventListener('click', queryBlockchainAddress);
+
+            // 区块链选项卡点击时显示查询界面
+            document.getElementById('blockchain-tab').addEventListener('click', function () {
+                document.getElementById('address-query-container').style.display = 'block';
+            });
+            // 在 DOMContentLoaded 事件处理函数中添加
+            document.getElementById('security-analysis-btn').addEventListener('click', function () {
+                if (!window.generatedMnemonic) {
+                    Swal.fire({
+                        title: '提示',
+                        text: '请先生成助记词',
+                        icon: 'info'
+                    });
+                    return;
+                }
+
+                // 先显示安全性分析界面
+                document.querySelector('.security-metrics').style.display = 'block';
+
+                // 然后再进行图表初始化和数据分析
+                setTimeout(function () {
+                    // 检查图表是否已经初始化
+                    if (!window.entropyChart || !window.crackTimeChart) {
+                        initEChartsCore();
+                    }
+
+                    // 分析助记词安全性并更新图表
+                    analyzeMnemonicSecurity(window.generatedMnemonic);
+
+                    // 平滑滚动到安全性分析区域
+                    document.querySelector('.security-metrics').scrollIntoView({behavior: 'smooth'});
+                }, 50); // 短暂延时确保DOM已更新
+            });
+
+            // 初始化图表
+            initCharts();
+
+            // 添加刷新交易记录按钮事件
+            document.getElementById('refresh-transactions-btn').addEventListener('click', fetchTransactionHistory);
+
+            // 添加交易记录条数选择变更事件
+            document.getElementById('transaction-limit').addEventListener('change', function () {
+                if (window.currentQueryInfo) {
+                    fetchTransactionHistory();
+                }
+            });
+        });
+
+        // 生成助记词函数
+        function generateMnemonic() {
+            const wordCount = document.getElementById('word-count').value;
+            const language = document.getElementById('language').value;
+
+            // 显示加载状态
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.innerHTML = `
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <p class="mt-2">正在生成助记词...</p>
+            </div>
+        `;
+
+            // 发送请求
+            fetch('/api/generate_mnemonic', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    count: wordCount,
+                    language: language
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // 显示结果
+                    let html = '<h4 class="mb-3">生成的助记词:</h4>';
+
+                    const mnemonicContainer = document.createElement('div');
+                    mnemonicContainer.className = 'mnemonic-container';
+
+                    data.words.forEach((word, index) => {
+                        const wordElement = document.createElement('div');
+                        wordElement.className = 'mnemonic-word';
+                        wordElement.innerHTML = `<span class="fw-bold me-1">${index + 1}.</span> ${word}`;
+                        mnemonicContainer.appendChild(wordElement);
+                    });
+
+                    resultContainer.innerHTML = html;
+                    resultContainer.appendChild(mnemonicContainer);
+
+                    // 显示种子信息
+                    if (data.seed) {
+                        const seedContainer = document.getElementById('seed-container');
+                        const seedValue = document.getElementById('seed-value');
+                        seedValue.textContent = data.seed;
+                        seedContainer.style.display = 'block';
+
+                        // 显示复制按钮
+                        document.getElementById('copy-container').style.display = 'block';
+                        document.getElementById('copy-seed-btn').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('seed-container').style.display = 'none';
+                        document.getElementById('copy-seed-btn').style.display = 'none';
+                        document.getElementById('copy-container').style.display = 'block';
+                    }
+
+                    // 存储生成的助记词用于复制
+                    window.generatedMnemonic = data.words.join(' ');
+                    window.generatedSeed = data.seed;
+                    // 确保安全性分析界面不显示
+                    document.querySelector('.security-metrics').style.display = 'none';
+
+
+                })
+                .catch(error => {
+                    console.error('生成助记词失败:', error);
+                    resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    生成助记词失败: ${error.message}
+                </div>
+            `;
+                });
+        }
+
+        // 验证助记词函数
+        function validateMnemonic() {
+            const mnemonicInput = document.getElementById('input-mnemonic').value.trim();
+            const language = document.getElementById('validate-language').value;
+
+            if (!mnemonicInput) {
+                document.getElementById('validate-result').innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    请输入助记词
+                </div>
+            `;
+                return false;
+            }
+
+            // 显示加载状态
+            const resultContainer = document.getElementById('validate-result');
+            resultContainer.innerHTML = `
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <p class="mt-2">正在验证助记词...</p>
+            </div>
+        `;
+
+            // 发送请求
+            fetch('/api/validate_mnemonic', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mnemonic: mnemonicInput,
+                    language: language
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.valid) {
+                        resultContainer.innerHTML = `
+                    <div class="validation-result">
+                    <div class="alert alert-success shadow-sm">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading mb-1">验证成功</h5>
+                        <p class="mb-0">该助记词符合BIP39标准，可用于区块链钱包</p>
+                    </div>
+                </div>
+            </div>
+    
+                <div class="card mt-4 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>助记词详情</h5>
+    </div>
+                    <div>
+                        <div class="row align-items-center mb-3 py-2 border-bottom">
+                            <div class="col-md-4 text-muted">
+                                <i class="fas fa-list-ol me-2"></i>单词数量
+                            </div>
+                            <div class="col-md-8 fw-bold">
+                                ${data.word_count || '未知'} 
+                                <span class="badge bg-${data.word_count >= 24 ? 'success' : data.word_count >= 18 ? 'primary' : 'info'} ms-2">
+                                    ${data.word_count >= 24 ? '高安全性' : data.word_count >= 18 ? '增强' : '标准'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3 py-2 border-bottom">
+                            <div class="col-md-4 text-muted">
+                                <i class="fas fa-language me-2"></i>语言
+                            </div>
+                            <div class="col-md-8 fw-bold">${data.language || '未知'}</div>
+                        </div>
+                        <div class="row align-items-center mb-3 py-2">
+                            <div class="col-md-4 text-muted">
+                                <i class="fas fa-random me-2"></i>熵位数
+                            </div>
+                            <div class="col-md-8">
+                                <span class="fw-bold me-2">${data.entropy_bits || '未知'} 位</span>
+                                <div class="strength-meter d-inline-block" style="width:120px; height:8px;">
+                                    <div class="strength-level ${data.entropy_bits >= 192 ? 'strength-very-strong' : data.entropy_bits >= 160 ? 'strength-strong' : 'strength-medium'}" 
+                                        style="width: ${data.entropy_bits >= 256 ? '100' : data.entropy_bits >= 192 ? '85' : data.entropy_bits >= 160 ? '70' : '50'}%; height:100%;"></div>
+                                </div>
+                                <span class="badge ${data.entropy_bits >= 192 ? 'bg-success' : data.entropy_bits >= 160 ? 'bg-primary' : 'bg-info'} ms-2">
+                                    ${data.entropy_bits >= 256 ? '顶级安全' : data.entropy_bits >= 192 ? '高度安全' : data.entropy_bits >= 160 ? '中等安全' : '基础安全'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                `;
+
+                        if (data.seed) {
+                            resultContainer.innerHTML += `
+                        <div class="seed-container mt-3">
+                            <h5><i class="fas fa-key me-2"></i>派生种子 (Hex)</h5>
+                            <div class="mb-2">${data.seed}</div>
+                            <button id="validate-copy-seed" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-copy me-1"></i>复制种子
+                            </button>
+                        </div>
+                    `;
+
+                            // 绑定复制种子按钮事件
+                            setTimeout(() => {
+                                const copySeedBtn = document.getElementById('validate-copy-seed');
+                                if (copySeedBtn) {
+                                    copySeedBtn.addEventListener('click', function () {
+                                        navigator.clipboard.writeText(data.seed).then(() => {
+                                            this.innerHTML = '<i class="fas fa-check me-1"></i>已复制';
+                                            setTimeout(() => {
+                                                this.innerHTML = '<i class="fas fa-copy me-1"></i>复制种子';
+                                            }, 1500);
+                                        });
+                                    });
+                                }
+                            }, 100);
+                        }
+
+                        // 分析助记词熵值和安全性
+                        analyzeMnemonicSecurity(mnemonicInput);
+                        // 添加以下代码
+                        // // 不显示安全性分析界面
+                        document.querySelector('.security-metrics').style.display = 'none';
+
+                        return true;
+                    } else {
+                        resultContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>助记词无效!</strong> ${data.error || '助记词格式不符合BIP39标准'}
+                    </div>
+                `;
+
+                        // 添加以下代码
+                        // 隐藏安全性分析界面
+                        document.querySelector('.security-metrics').style.display = 'none';
+                        return false;
+                    }
+                })
+                .catch(error => {
+                    console.error('验证助记词失败:', error);
+                    resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    验证助记词失败: ${error.message}
+                </div>
+            `;
+                    return false;
+                });
+
+            return true;
+        }
+
+        // 复制助记词函数
+        function copyMnemonic() {
+            if (!window.generatedMnemonic) {
+                return;
+            }
+
+            navigator.clipboard.writeText(window.generatedMnemonic)
+                .then(() => {
+                    const copyBtn = document.getElementById('copy-btn');
+                    copyBtn.innerHTML = '<i class="fas fa-check me-2"></i>已复制';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy me-2"></i>复制助记词';
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                });
+        }
+
+        // 复制种子函数
+        function copySeed() {
+            if (!window.generatedSeed) {
+                return;
+            }
+
+            navigator.clipboard.writeText(window.generatedSeed)
+                .then(() => {
+                    const copyBtn = document.getElementById('copy-seed-btn');
+                    copyBtn.innerHTML = '<i class="fas fa-check me-2"></i>已复制';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy me-2"></i>复制种子';
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                });
+        }
+
+        // 加载区块链列表
+        function loadBlockchains() {
+            fetch('/api/supported_chains')
+                .then(response => response.json())
+                .then(data => {
+                    // 生成区块链选择项
+                    const chainsContainer = document.getElementById('blockchain-options');
+                    chainsContainer.innerHTML = '';
+
+                    data.chains.forEach(chain => {
+                        const chainOption = document.createElement('div');
+                        chainOption.className = 'form-check form-check-inline';
+                        chainOption.innerHTML = `
+                        <input class="form-check-input blockchain-check" type="checkbox" 
+                               id="chain-${chain}" value="${chain}" checked>
+                        <label class="form-check-label" for="chain-${chain}">${chain}</label>
+                    `;
+                        chainsContainer.appendChild(chainOption);
+                    });
+
+                    // 生成区块链下拉列表
+                    const queryChainSelect = document.getElementById('query-chain');
+                    queryChainSelect.innerHTML = '';
+
+                    data.chains.forEach(chain => {
+                        const option = document.createElement('option');
+                        option.value = chain;
+                        option.textContent = chain;
+                        queryChainSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载区块链列表失败:', error);
+                    const chainsContainer = document.getElementById('blockchain-options');
+                    chainsContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        加载区块链列表失败
+                    </div>
+                `;
+                });
+        }
+
+        // 生成区块链地址
+        function generateBlockchainAddresses() {
+            const mnemonic = document.getElementById('blockchain-mnemonic').value.trim();
+            const passphrase = document.getElementById('blockchain-passphrase').value;
+            const addressCount = parseInt(document.getElementById('blockchain-count').value);
+
+            // 添加语言选择
+            const blockchainLanguageSelect = document.getElementById('blockchain-language');
+            const language = blockchainLanguageSelect ? blockchainLanguageSelect.value : '英文';
+
+            // 获取选中的区块链
+            const blockchainChecks = document.querySelectorAll('.blockchain-check:checked');
+            const selectedChains = Array.from(blockchainChecks).map(check => check.value);
+
+            if (!mnemonic) {
+                Swal.fire({
+                    title: '错误',
+                    text: '请输入助记词',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            if (selectedChains.length === 0) {
+                Swal.fire({
+                    title: '错误',
+                    text: '请至少选择一个区块链',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('blockchain-result').style.display = 'block';
+            document.getElementById('blockchain-addresses-tabs').innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="spinner-border text-primary me-2" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <span>正在生成地址，请稍候...</span>
+            </div>
+        `;
+            document.getElementById('blockchain-addresses-content').innerHTML = '';
+
+            // 发送请求
+            fetch('/api/generate_addresses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mnemonic: mnemonic,
+                    passphrase: passphrase,
+                    chains: selectedChains,
+                    address_count: addressCount,
+                    language: language  // 添加语言参数
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.error || '生成地址失败');
+                    }
+
+                    // 检查是否有错误信息在addresses中
+                    if (data.addresses && data.addresses.error) {
+                        throw new Error(data.addresses.error);
+                    }
+
+                    // 清空标签页和内容
+                    const tabsContainer = document.getElementById('blockchain-addresses-tabs');
+                    const contentContainer = document.getElementById('blockchain-addresses-content');
+                    tabsContainer.innerHTML = '';
+                    contentContainer.innerHTML = '';
+
+                    // 检查地址数据的格式
+                    if (typeof data.addresses !== 'object' || Array.isArray(data.addresses)) {
+                        throw new Error('返回的地址数据格式不正确');
+                    }
+
+                    // 遍历每个区块链的地址
+                    const chains = Object.keys(data.addresses);
+
+                    if (chains.length === 0) {
+                        contentContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        未能生成任何地址
+                    </div>
+                `;
+                        return;
+                    }
+
+                    chains.forEach((chain, index) => {
+                        // 创建标签页
+                        const tabItem = document.createElement('li');
+                        tabItem.className = 'nav-item';
+                        tabItem.role = 'presentation';
+                        tabItem.innerHTML = `
+                    <button class="nav-link ${index === 0 ? 'active' : ''}" 
+                            id="chain-tab-${chain}" 
+                            data-bs-toggle="pill" 
+                            data-bs-target="#chain-content-${chain}" 
+                            type="button" role="tab" 
+                            aria-controls="chain-content-${chain}" 
+                            aria-selected="${index === 0 ? 'true' : 'false'}">
+                        ${chain}
+                    </button>
+                `;
+                        tabsContainer.appendChild(tabItem);
+
+                        // 创建内容区
+                        const contentPane = document.createElement('div');
+                        contentPane.className = `tab-pane fade ${index === 0 ? 'show active' : ''}`;
+                        contentPane.id = `chain-content-${chain}`;
+                        contentPane.role = 'tabpanel';
+                        contentPane.setAttribute('aria-labelledby', `chain-tab-${chain}`);
+
+                        // 添加地址列表
+                        const addresses = data.addresses[chain];
+
+                        // 检查地址数据是否有效
+                        if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
+                            contentPane.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${chain}链未生成任何有效地址
+                        </div>
+                    `;
+                            contentContainer.appendChild(contentPane);
+                            return;
+                        }
+
+                        // 检查是否有错误信息
+                        if (addresses.length === 1 && addresses[0].错误) {
+                            contentPane.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ${addresses[0].错误}
+                        </div>
+                    `;
+                            contentContainer.appendChild(contentPane);
+                            return;
+                        }
+
+                        const addressList = document.createElement('div');
+                        addressList.className = 'list-group mb-4';
+
+                        addresses.forEach((addr, i) => {
+                            const addressItem = document.createElement('div');
+                            addressItem.className = 'list-group-item';
+
+                            // 检查地址对象中是否有所需的属性
+                            if (!addr.地址 || !addr.路径 || !addr.公钥) {
+                                addressItem.innerHTML = `
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                地址 #${i} 数据不完整
+                            </div>
+                        `;
+                                addressList.appendChild(addressItem);
+                                return;
+                            }
+
+                            addressItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">
+                                <span class="badge bg-secondary me-2">${i + 1}</span>
+                                地址 #${i}
+                            </h5>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary copy-address" 
+                                        data-address="${addr.地址}">
+                                    <i class="fas fa-copy me-1"></i>复制
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info query-btn"
+                                        data-chain="${chain}" data-address="${addr.地址}">
+                                    <i class="fas fa-search-dollar me-1"></i>查询
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>派生路径:</strong>
+                            </div>
+                            <div class="col-md-9">
+                                <code>${addr.路径 || "未知"}</code>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-md-3">
+                                <strong>地址:</strong>
+                            </div>
+                            <div class="col-md-9">
+                                <code class="user-select-all">${addr.地址}</code>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-md-3">
+                                <strong>公钥:</strong>
+                            </div>
+                            <div class="col-md-9">
+                                <code class="text-truncate d-block" style="max-width: 100%;">${addr.公钥 || "未知"}</code>
+                            </div>
+                        </div>
+                    `;
+
+                            addressList.appendChild(addressItem);
+                        });
+
+                        contentPane.appendChild(addressList);
+                        contentContainer.appendChild(contentPane);
+                    });
+
+                    // 显示地址查询区域
+                    document.getElementById('address-query-container').style.display = 'block';
+
+                    // 绑定复制地址按钮事件
+                    document.querySelectorAll('.copy-address').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const address = this.getAttribute('data-address');
+                            navigator.clipboard.writeText(address).then(() => {
+                                // 显示复制成功提示
+                                Swal.fire({
+                                    title: '已复制!',
+                                    text: '地址已复制到剪贴板',
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                        });
+                    });
+
+                    // 绑定查询按钮事件
+                    document.querySelectorAll('.query-btn').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const chain = this.getAttribute('data-chain');
+                            const address = this.getAttribute('data-address');
+
+                            // 设置查询表单
+                            document.getElementById('query-chain').value = chain;
+                            document.getElementById('query-address').value = address;
+
+                            // 自动滚动到查询区域
+                            document.getElementById('address-query-container').scrollIntoView({
+                                behavior: 'smooth'
+                            });
+
+                            // 自动触发查询
+                            queryBlockchainAddress();
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('生成区块链地址失败:', error);
+                    document.getElementById('blockchain-addresses-tabs').innerHTML = '';
+                    document.getElementById('blockchain-addresses-content').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    生成区块链地址失败: ${error.message}
+                </div>
+            `;
+                });
+        }
+
+
+        // 查询区块链地址
+        function queryBlockchainAddress() {
+            const chain = document.getElementById('query-chain').value;
+            const address = document.getElementById('query-address').value.trim();
+
+            if (!address) {
+                Swal.fire({
+                    title: '错误',
+                    text: '请输入要查询的地址',
+                    icon: 'error'
+                });
+                return;
+            }
+            // 判断 address_info 是否存在且包含错误
+
+
+            // 显示加载状态
+            const infoContainer = document.getElementById('address-info-container');
+            infoContainer.style.display = 'block';
+            document.getElementById('balance-info-container').innerHTML = `
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">查询中...</span>
+                </div>
+                <p class="mt-2">正在查询地址信息...</p>
+            </div>
+        `;
+            document.getElementById('transactions-list-container').innerHTML = `
+            <div class="text-center my-4">
+                <p>请在查询完成后点击"交易历史"标签查看交易记录</p>
+            </div>
+        `;
+
+            // 自动切换到余额标签页
+            document.getElementById('address-balance-tab').click();
+
+            // 发送查询请求
+            fetch('/api/query_address', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chain: chain,
+                    address: address
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.error || '查询地址失败');
+                    }
+
+                    const addressInfo = data.address_info;
+                    const riskAssessment = data.risk_assessment;
+                    // 判断 address_info 是否存在且包含错误
+                    if (addressInfo && addressInfo.error) {
+                        // 显示地址格式错误弹窗
+                        Swal.fire({
+                            title: '地址验证失败',
+                            text: addressInfo.error,
+                            icon: 'warning',
+                            confirmButtonText: '确定'
+                        });
+
+                        // 清空加载状态内容，但保持容器可见
+                        document.getElementById('balance-info-container').innerHTML = `
+                
+            `;
+
+                        // 不再继续执行显示卡片的代码
+                        return;
+                    }
+                    // 更新余额信息界面
+                    updateBalanceInfo(addressInfo, riskAssessment);
+
+                    // 保存当前查询信息，用于之后获取交易历史
+                    window.currentQueryInfo = {
+                        chain: chain,
+                        address: address
+                    };
+
+                    // 启用交易历史标签
+                    document.getElementById('address-transactions-tab').classList.remove('disabled');
+                })
+                .catch(error => {
+                    console.error('查询地址失败:', error);
+                    document.getElementById('balance-info-container').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    查询地址失败: ${error.message}
+                </div>
+            `;
+                    document.getElementById('transactions-list-container').innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    无法获取交易记录，请先查询地址信息
+                </div>
+            `;
+                });
+        }
+
+        // 更新风险评估部分的字体大小，移除small类
+        function updateBalanceInfo(addressInfo, riskAssessment) {
+            // 设置风险等级样式
+            let riskBadgeClass = "bg-success";
+            if (riskAssessment.风险等级 === "中") {
+                riskBadgeClass = "bg-warning";
+            } else if (riskAssessment.风险等级 === "高") {
+                riskBadgeClass = "bg-danger";
+            }
+
+            // 使用类似截图中的紧凑样式，但增大字体
+            let infoHtml = `
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-info-circle me-2"></i>地址信息</span>
+                    <a href="${addressInfo.浏览器链接}" target="_blank" class="btn btn-sm btn-light py-0 px-2">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td style="width:100px">区块链:</td>
+                        <td>${addressInfo.区块链}</td>
+                    </tr>
+                    <tr>
+                        <td>地址:</td>
+                        <td><code class="user-select-all" style="font-size:0.9rem">${addressInfo.地址}</code></td>
+                    </tr>
+                    <tr>
+                        <td>余额:</td>
+                        <td>${typeof addressInfo.余额 === 'number' ? addressInfo.余额.toFixed(8) + (
+                addressInfo.区块链 === '比特币' ? ' BTC' :
+                    addressInfo.区块链 === '以太坊' ? ' ETH' :
+                        addressInfo.区块链 === '狗狗币' ? ' DOGE' : '') : '0.00000000'}</td>
+                    </tr>
+                    <tr>
+                        <td>交易数量:</td>
+                        <td>
+                            ${addressInfo.交易数量 || '0'}
+                            <button class="btn btn-sm btn-outline-info py-0 px-2 ms-2" onclick="fetchTransactionHistory()" style="font-size:0.85rem">
+                                <i class="fas fa-search"></i> 查询交易
+                            </button>
+                        </td>
+                    </tr>
+              
+                </table>
+                
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold"><i class="fas fa-shield-alt me-1"></i>风险评估</span>
+                        <span class="badge ${riskBadgeClass}" style="font-size:0.85rem">风险: ${riskAssessment.风险等级}</span>
+                    </div>
+                    
+                    ${riskAssessment.风险因素.length > 0 ?
+                `<div class="mb-2">
+                            <div class="fw-bold mb-1">风险因素:</div>
+                            <ul class="ps-3 mb-0">
+                                ${riskAssessment.风险因素.map(factor => `<li>${factor}</li>`).join('')}
+                            </ul>
+                        </div>` :
+                '<div class="mb-2">未检测到明显风险</div>'
+            }
+                    
+                    ${riskAssessment.建议.length > 0 ?
+                `<div>
+                            <div class="fw-bold mb-1">建议:</div>
+                            <ul class="ps-3 mb-0">
+                                ${riskAssessment.建议.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                            </ul>
+                        </div>` :
+                ''
+            }
+                </div>
+            </div>
+        </div>`;
+
+            // 更新界面
+            document.getElementById('balance-info-container').innerHTML = infoHtml;
+        }
+
+        // 获取交易历史记录
+        function fetchTransactionHistory() {
+            if (!window.currentQueryInfo) {
+                Swal.fire({
+                    title: '错误',
+                    text: '请先查询地址信息',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            const {chain, address} = window.currentQueryInfo;
+            const limit = document.getElementById('transaction-limit').value;
+
+            // 显示加载状态
+            document.getElementById('transactions-list-container').innerHTML = `
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">查询中...</span>
+                </div>
+                <p class="mt-2">正在查询交易历史...</p>
+            </div>
+        `;
+
+            // 切换到交易历史标签页
+            document.getElementById('address-transactions-tab').click();
+
+            // 发送查询请求
+            fetch('/api/query_transactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chain: chain,
+                    address: address,
+                    limit: parseInt(limit)
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.error || '查询交易历史失败');
+                    }
+
+                    const transactionInfo = data.transaction_info;
+                    const transactions = transactionInfo.交易 || [];
+
+                    // 显示交易历史
+                    displayTransactionHistory(transactionInfo);
+                })
+                .catch(error => {
+                    console.error('查询交易历史失败:', error);
+                    document.getElementById('transactions-list-container').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    查询交易历史失败: ${error.message}
+                </div>
+            `;
+                });
+        }
+
+        // 显示交易历史记录
+        function displayTransactionHistory(transactionInfo) {
+            const transactions = transactionInfo.交易 || [];
+
+            if (transactions.length === 0) {
+                document.getElementById('transactions-list-container').innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    未找到交易记录
+                </div>
+            `;
+                return;
+            }
+
+            // 创建交易记录表格
+            let transactionsHtml = `
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>交易哈希</th>
+                            <th>方向</th>
+                            <th>金额</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+            transactions.forEach(tx => {
+                // 金额显示
+                let amount = '';
+                if (tx.金额 !== undefined) {
+                    amount = tx.金额;
+                    // 根据区块链类型添加单位
+                    if (transactionInfo.区块链 === '比特币') {
+                        amount += ' BTC';
+                    } else if (transactionInfo.区块链 === '以太坊') {
+                        amount += ' ETH';
+                    } else if (transactionInfo.区块链 === '狗狗币') {
+                        amount += ' DOGE';
+                    }
+                }
+
+                // 设置交易方向的样式
+                let directionClass = '';
+                let directionIcon = '';
+                if (tx.方向 === '发送') {
+                    directionClass = 'text-danger';
+                    directionIcon = '<i class="fas fa-arrow-up me-1"></i>';
+                } else if (tx.方向 === '接收') {
+                    directionClass = 'text-success';
+                    directionIcon = '<i class="fas fa-arrow-down me-1"></i>';
+                } else if (tx.方向 === '自我交易') {
+                    directionClass = 'text-warning';
+                    directionIcon = '<i class="fas fa-sync-alt me-1"></i>';
+                }
+
+                // 设置确认状态
+                let confirmationStatus = '';
+                if (tx.确认数 !== undefined) {
+                    confirmationStatus = typeof tx.确认数 === 'number' ?
+                        (tx.确认数 > 0 ? `已确认 (${tx.确认数})` : '未确认') :
+                        tx.确认数;
+                } else if (tx.备注) {
+                    confirmationStatus = '需访问链接查看';
+                }
+
+                // 生成表格行
+                transactionsHtml += `
+                <tr>
+                    <td>${tx.时间格式化 || '未知时间'}</td>
+                    <td>
+                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="${tx.交易哈希}">
+                            ${tx.交易哈希}
+                        </span>
+                    </td>
+                    <td class="${directionClass}">${directionIcon}${tx.方向 || '未知'}</td>
+                    <td>${amount || '未知'}</td>
+                    <td>${confirmationStatus}</td>
+                    <td>
+                        <a href="${tx.链接}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </td>
+                </tr>
+            `;
+            });
+
+            transactionsHtml += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+            // 添加状态信息
+            if (transactionInfo.错误) {
+                transactionsHtml = `
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${transactionInfo.错误}
+                </div>
+            ` + transactionsHtml;
+            }
+
+            if (transactionInfo.状态 === '部分成功') {
+                transactionsHtml = `
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    部分数据可能不完整，请点击交易链接查看完整信息
+                </div>
+            ` + transactionsHtml;
+            }
+
+            // 更新界面
+            document.getElementById('transactions-list-container').innerHTML = transactionsHtml;
+        }
+
+        // 分析助记词熵值和安全性
+        function analyzeMnemonicSecurity(mnemonic) {
+            // 计算熵值 (简化计算，实际值应与BIP-39标准一致)
+            const wordCount = mnemonic.trim().split(/\s+/).length;
+            let entropy = 0;
+
+            // BIP-39标准: 每个词提供11位熵，校验位是 (熵位数/32)
+            if (wordCount === 12) {
+                entropy = 128; // 实际熵为 128位
+            } else if (wordCount === 15) {
+                entropy = 160;
+            } else if (wordCount === 18) {
+                entropy = 192;
+            } else if (wordCount === 21) {
+                entropy = 224;
+            } else if (wordCount === 24) {
+                entropy = 256;
+            }
+
+            // 显示熵值
+            $("#entropy-value").text(entropy);
+
+            // 评估强度
+            let strengthText = "";
+            let strengthClass = "";
+            let strengthPercent = 0;
+
+            if (entropy < 128) {
+                strengthText = "强";
+                strengthClass = "strength-weak";
+                strengthPercent = 97;
+            } else if (entropy < 192) {
+                strengthText = "很强";
+                strengthClass = "strength-medium";
+                strengthPercent = 98;
+            } else if (entropy < 256) {
+                strengthText = "极强";
+                strengthClass = "strength-strong";
+                strengthPercent = 99;
+            } else {
+                strengthText = "史诗级强度";
+                strengthClass = "strength-very-strong";
+                strengthPercent = 100;
+            }
+
+            // 更新强度显示
+            $("#strength-text").text(strengthText);
+            const strengthLevel = $("#strength-level");
+            strengthLevel.removeClass("strength-weak strength-medium strength-strong strength-very-strong");
+            strengthLevel.addClass(strengthClass);
+            strengthLevel.css("width", strengthPercent + "%");
+
+            // 计算破解时间 (理论上)
+            const maxCrackRate = 6e20; // 每秒尝试次数（全网超级计算力）
+            const totalGuesses = Math.pow(2, entropy); // 密码空间大小
+            const crackSeconds = totalGuesses / maxCrackRate;
+
+            // 转换为易懂的时间格式
+            function formatTime(seconds) {
+                const year = 365 * 24 * 3600;
+                const billionYears = 1e9 * year;
+
+                if (seconds < 60) return `${seconds.toFixed(2)} 秒`;
+                else if (seconds < 3600) return `${(seconds / 60).toFixed(2)} 分钟`;
+                else if (seconds < 86400) return `${(seconds / 3600).toFixed(2)} 小时`;
+                else if (seconds < year) return `${(seconds / 86400).toFixed(2)} 天`;
+                else if (seconds < billionYears) return `${(seconds / year).toFixed(2)} 年`;
+                else return `${(seconds / billionYears).toFixed(2)} 个宇宙年龄`;
+            }
+
+            // // 获取强度评级文字（可复用现有强度分级逻辑）
+            // function getStrengthLevel(entropy) {
+            //     if (entropy < 64) return "极弱（建议立即更换）";
+            //     if (entropy < 96) return "较弱（容易被暴力破解）";
+            //     if (entropy < 128) return "中等（适合非核心数据）";
+            //     if (entropy < 192) return "强（适合大多数应用）";
+            //     if (entropy <= 256) return "极强（安全性极高）";
+            //     return "超强（理论上无法破解）";
+            // }
+
+
+// 修改 analyzeMnemonicSecurity 函数中的 crackTimeText 部分，为数字添加自定义样式
+
+            let crackTimeText = `
+        <div class="row">
+            <div class="col-md-3 fw-bold">熵值:</div>
+            <div class="col-md-9"><span class="crypto-number">${entropy}</span> 位 (<span class="crypto-number">${entropy}</span> bit)</div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-md-3 fw-bold">组合数量:</div>
+            <div class="col-md-9"><span class="math-exp">2<sup>${entropy}</sup></span> = <span class="crypto-number">${formatBigNumber(totalGuesses)}</span> 种</div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-md-3 fw-bold">使用比特币全网最高算力:</div>
+            <div class="col-md-9"><span class="crypto-number">6 × 10<sup>20</sup></span> 次/秒 </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-md-3 fw-bold">破解时间:</div>
+            <div class="col-md-9"><span class="math-exp">2<sup>${entropy}</sup> ÷ (6 × 10<sup>20</sup>)</span> ≈ <span class="crypto-number">${formatUniverseAge(crackSeconds)}</span> 个宇宙年龄</div>
+        </div>`;
+
+            // 使用html()方法渲染HTML结构
+            $("#crack-time").html(crackTimeText);
+
+            // 添加格式化大数字的辅助函数
+            function formatBigNumber(num) {
+                if (num < 1000000) {
+                    return num.toLocaleString(); // 直接显示小于百万的数
+                }
+
+                // 将科学计数法转换为字符串形式
+                const parts = num.toExponential(2).split('e+');
+                const base = parseFloat(parts[0]);
+                const exponent = parseInt(parts[1]);
+
+                // 对于非常大的数字，仍然使用科学计数法，但以更易读的方式显示
+                if (exponent > 20) {
+                    return `${base.toLocaleString()} × 10<sup>${exponent}</sup>`;
+                } else {
+                    // 对于中等大小的数字，尝试直接表示
+                    const fullNum = num.toLocaleString();
+                    return fullNum;
+                }
+            }
+
+            // 添加格式化宇宙年龄的辅助函数
+            function formatUniverseAge(seconds) {
+                const year = 365 * 24 * 3600;
+                const billionYears = 1e9 * year;
+                const universeAges = seconds / billionYears / 13.8; // 宇宙年龄约为138亿年
+
+                if (universeAges < 1000) {
+                    return universeAges.toLocaleString(undefined, {maximumFractionDigits: 2});
+                } else {
+                    // 转换为更易读的格式
+                    const parts = universeAges.toExponential(2).split('e+');
+                    const base = parseFloat(parts[0]);
+                    const exponent = parseInt(parts[1]);
+                    return `${base.toLocaleString()} × 10<sup>${exponent}</sup>`;
+                }
+            }
+
+
+            // 更新图表
+            updateEntropyChart(entropy);
+            updateCrackTimeChart(entropy);
+        }
+
+
+        function initCharts() {
+            try {
+                // 检查ECharts对象是否已加载
+                if (typeof echarts === 'undefined') {
+                    console.error('ECharts库未加载，尝试动态加载...');
+
+                    // 动态加载ECharts
+                    const script = document.createElement('script');
+                    script.src = '/static/js/echarts.js';
+                    script.onload = function () {
+                        console.log('ECharts加载成功，初始化图表...');
+                        // 不要立即初始化，而是等待需要时再初始化
+                        // initEChartsCore();
+                    };
+                    script.onerror = function () {
+                        console.error('无法加载ECharts，显示错误提示');
+                        showChartError();
+                    };
+                    document.head.appendChild(script);
+                    return;
+                }
+
+                // 不要立即初始化，而是等待安全性分析按钮点击时再初始化
+                // initEChartsCore();
+                console.log('ECharts已加载，将在需要时初始化图表');
+            } catch (error) {
+                console.error('初始化图表时出错:', error);
+                showChartError();
+            }
+        }
+
+        // 添加显示图表错误提示的函数
+        function showChartError() {
+            const chartContainers = document.querySelectorAll('.chart-container');
+            chartContainers.forEach(container => {
+                container.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                无法加载图表库，图表功能不可用。
+            </div>
+        `;
+            });
+        }
+
+        // 绑定安全性分析按钮事件
+        document.getElementById('security-analysis-btn').addEventListener('click', function () {
+            if (!window.generatedMnemonic) {
+                Swal.fire({
+                    title: '提示',
+                    text: '请先生成助记词',
+                    icon: 'info'
+                });
+                return;
+            }
+
+            // 先显示安全性分析界面
+            document.querySelector('.security-metrics').style.display = 'block';
+
+            // 清空旧图，重新初始化
+            if (window.entropyChart) {
+                window.entropyChart.clear();
+            }
+            if (window.crackTimeChart) {
+                window.crackTimeChart.clear();
+            }
+            initEChartsCore();
+
+            // 分析并渲染新图
+            setTimeout(() => {
+                analyzeMnemonicSecurity(window.generatedMnemonic);
+                document.querySelector('.security-metrics')
+                    .scrollIntoView({behavior: 'smooth'});
+            }, 50);
+        });
+
+        // 初始化ECharts图表
+        function initEChartsCore() {
+            // 获取图表容器
+            const entropyChartDom = document.getElementById('entropyDistributionChart');
+            const crackTimeChartDom = document.getElementById('crackTimeChart');
+
+            // 确保容器可见且有尺寸
+            if (entropyChartDom) {
+                // 强制设置容器尺寸，确保图表能够初始化
+                entropyChartDom.style.width = '100%';
+                entropyChartDom.style.height = '350px';
+            }
+
+            if (crackTimeChartDom) {
+                // 强制设置容器尺寸，确保图表能够初始化
+                crackTimeChartDom.style.width = '100%';
+                crackTimeChartDom.style.height = '350px';
+            }
+
+            // 短暂延时确保DOM尺寸已更新
+            setTimeout(function () {
+                try {
+                    // 初始化熵值分布图
+                    window.entropyChart = echarts.init(entropyChartDom);
+                    const entropyOption = {
+                        title: {text: '熵值分布图', left: 'center'},
+                        tooltip: {
+                            trigger: 'axis',
+                            formatter: function (params) {
+                                const wordCounts = [12, 15, 18, 21, 24];
+                                const entropyValues = [128, 160, 192, 224, 256];
+                                const index = params[0].dataIndex;
+                                return `${wordCounts[index]}个词 (${entropyValues[index]}位熵): ${params[0].value}%`;
+                            }
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: ['12个词', '15个词', '18个词', '21个词', '24个词'],
+                            name: '助记词长度',
+                            nameLocation: 'middle',
+                            nameGap: 30
+                        },
+                        yAxis: {
+                            type: 'value',
+                            name: '强度水平 (%)',
+                            max: 100
+                        },
+                        series: [{
+                            name: '熵值分布',
+                            type: 'bar',
+                            // 更新为合理的强度数据（示例）
+                            data: [50, 65, 80, 90, 100],
+                            itemStyle: {
+                                color: function (params) {
+                                    const colorList = [
+                                        new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                            {offset: 0, color: '#ff9a9e'},
+                                            {offset: 1, color: '#fad0c4'}
+                                        ]),
+                                        new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                            {offset: 0, color: '#ffecd2'},
+                                            {offset: 1, color: '#fcb69f'}
+                                        ]),
+                                        new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                            {offset: 0, color: '#84fab0'},
+                                            {offset: 1, color: '#8fd3f4'}
+                                        ]),
+                                        new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                            {offset: 0, color: '#a1c4fd'},
+                                            {offset: 1, color: '#c2e9fb'}
+                                        ]),
+                                        new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                            {offset: 0, color: '#d4fc79'},
+                                            {offset: 1, color: '#96e6a1'}
+                                        ])
+                                    ];
+                                    return colorList[params.dataIndex];
+                                }
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }],
+                        animationEasing: 'elasticOut',
+                        animationDelay: function (idx) {
+                            return idx * 100;
+                        }
+                    };
+                    window.entropyChart.setOption(entropyOption);
+
+
+                    window.crackTimeChart = echarts.init(document.getElementById('crackTimeChart'));
+
+
+                    const crackTimeOption = {
+                        title: {
+                            text: '破解时间漏斗图（比特币全网算力 600 EH/s）',
+                            left: 'center',
+                            textStyle: {
+                                color: '#333',
+                                fontSize: 16
+                            }
+                        },
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: ({data}) => `
+            <div style="padding:8px;background:#fff;border:1px solid #eee;border-radius:4px">
+                <strong>${data.name}</strong><br>
+                熵值: ${data.entropy} bits<br>
+                破解时间: ${formatNumberWithUnit(data.value)}<br>
+                安全等级: ${data.level}
+            </div>
+        `
+                        },
+                        series: [{
+                            name: '破解时间',
+                            type: 'funnel',
+                            left: '15%',
+                            top: '15%',
+                            width: '70%',
+                            height: '70%',
+                            sort: 'descending',
+                            gap: 2,
+                            label: {
+                                show: true,
+                                position: 'inside',
+                                formatter: ({data}) => `${data.name}\n${formatNumberWithUnit(data.value)}`,
+                                color: '#fff',
+                                fontSize: 12
+                            },
+                            itemStyle: {
+                                borderWidth: 1,
+                                borderColor: '#fff',
+                                color: '#5470C6'
+                            },
+                            data: [
+                                {value: 6.3e48, name: '24词', entropy: 256, level: 'Ⅴ级'},
+                                {value: 1.4e39, name: '21词', entropy: 224, level: 'Ⅳ级'},
+                                {value: 3.3e29, name: '18词', entropy: 192, level: 'Ⅳ级'},
+                                {value: 7.9e19, name: '15词', entropy: 160, level: 'Ⅲ级'},
+                                {value: 1.8e10, name: '12词', entropy: 128, level: 'Ⅲ级'}
+                            ]
+                        }]
+                    };
+
+// 数值格式化函数（带单位）
+                    function formatNumberWithUnit(num) {
+                        const units = [
+                            {threshold: 1e48, unit: '×10⁴⁸ 年'},
+                            {threshold: 1e39, unit: '×10³⁹ 年'},
+                            {threshold: 1e29, unit: '×10²⁹ 年'},
+                            {threshold: 1e19, unit: '×10¹⁹ 年'},
+                            {threshold: 1e10, unit: '亿年'}
+                        ];
+
+                        const found = units.find(u => num >= u.threshold);
+                        if (found) {
+                            return (num / found.threshold).toFixed(1) + found.unit;
+                        }
+                        return num + ' 年';
+                    }
+
+// echarts.init(document.getElementById('main')).setOption(crackTimeOption);
+
+// 响应式调整
+                    window.addEventListener('resize', () => {
+                        window.crackTimeChart.resize();
+                    });
+
+                    window.crackTimeChart.setOption(crackTimeOption);
+                    // 响应窗口大小变化
+                    window.addEventListener('resize', function () {
+                        if (window.entropyChart) window.entropyChart.resize();
+                        if (window.crackTimeChart) window.crackTimeChart.resize();
+                    });
+
+                    console.log('ECharts图表初始化成功');
+                } catch (error) {
+                    console.error('初始化ECharts图表时出错:', error);
+                }
+            }, 50);
+        }
+
+        // // 更新熵值分布图
+        //     function updateEntropyChart(entropy) {
+        //     try {
+        //         if (!window.entropyChart) {
+        //             console.warn('熵值图表未初始化，跳过更新');
+        //             return;
+        //         }
+
+        //         const data = [0, 0, 0, 0, 0];
+
+        //         // 根据熵值设置相应柱状图的数据
+        //         if (entropy === 128) {
+        //             data[0] = 50;  // 12个词
+        //         } else if (entropy === 160) {
+        //             data[1] = 65;  // 15个词
+        //         } else if (entropy === 192) {
+        //             data[2] = 80;  // 18个词
+        //         } else if (entropy === 224) {
+        //             data[3] = 90;  // 21个词
+        //         } else if (entropy === 256) {
+        //             data[4] = 100;  // 24个词
+        //         }
+
+        //         window.entropyChart.setOption({
+        //             series: [{
+        //                 data: data
+        //             }]
+        //         });
+        //     } catch (error) {
+        //         console.error('更新熵值分布图时出错:', error);
+        //     }
+        // }
+
+        // //更新破解时间漏斗图
+        //     function updateCrackTimeChart(entropy) {
+        //     try {
+        //         if (!window.crackTimeChart) {
+        //             console.warn('破解时间图表未初始化，跳过更新');
+        //             return;
+        //         }
+
+        //         const data = [0, 0, 0, 0, 0];
+
+        //         // 根据熵值设置相应柱状图的数据
+        //         if (entropy === 128) {
+        //             data[0] = 40;  // 12个词
+        //         } else if (entropy === 160) {
+        //             data[1] = 60;  // 15个词
+        //         } else if (entropy === 192) {
+        //             data[2] = 80;  // 18个词
+        //         } else if (entropy === 224) {
+        //             data[3] = 95;  // 21个词
+        //         } else if (entropy === 256) {
+        //             data[4] = 100;  // 24个词
+        //         }
+
+        //         window.crackTimeChart.setOption({
+        //             series: [{
+        //                 data: data
+        //             }]
+        //         });
+        //     } catch (error) {
+        //         console.error('更新破解时间图表时出错:', error);
+        //     }
+        // }
+        // 更新熵值分布图
+        function updateEntropyChart(entropy) {
+            try {
+                if (!window.entropyChart) {
+                    console.warn('熵值图表未初始化，跳过更新');
+                    return;
+                }
+                // 1. 取回初始化时那份完整的 data 数组
+                const option = window.entropyChart.getOption();
+                const baseData = option.series[0].data.slice();  // [50,65,80,90,100]
+                // 2. 把整份 baseData 再次 setOption 回去
+                window.entropyChart.setOption({
+                    series: [{
+                        data: baseData
+                    }]
+                });
+            } catch (error) {
+                console.error('更新熵值分布图时出错:', error);
+            }
+        }
+
+        // 更新破解时间漏斗图
+        function updateCrackTimeChart(entropy) {
+            try {
+                if (!window.crackTimeChart) {
+                    console.warn('破解时间图表未初始化，跳过更新');
+                    return;
+                }
+                // 1. 取回初始化时那份完整的 data 数组
+                const option = window.crackTimeChart.getOption();
+                const baseData = option.series[0].data.slice();  // [40,60,80,95,100]
+                // 2. 把整份 baseData 再次 setOption 回去
+                window.crackTimeChart.setOption({
+                    series: [{
+                        data: baseData
+                    }]
+                });
+            } catch (error) {
+                console.error('更新破解时间图表时出错:', error);
+            }
+        }
+
+    </script>
+{% endblock %}
+
+
+{% block additional_styles %}
+    .mnemonic-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    }
+    /* 增加卡片体的高度 */
+    .card-body {
+    min-height: auto; /* 设置最小高度，保证卡片有足够空间 */
+    padding-bottom: 10px; /* 增加底部内边距，提供更多空间感 */
+    }
+
+
+    @font-face {
+    font-family: 'Times-Roman';
+    src: url('{{ url_for("static", filename="webfonts/Times-Roman.ttf") }}') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+    }
+    .mnemonic-word {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+    }
+    .mnemonic-word:hover {
+    background-color: #007bff;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .tab-pane {
+    padding: 1.5rem;
+    }
+    .nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    }
+    .nav-tabs .nav-link {
+    color: black;
+    font-weight: 600;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+    }
+    .nav-tabs .nav-link:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    }
+    .nav-tabs .nav-link.active {
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border-color: #007bff;
+    }
+    .form-group {
+    margin-bottom: 1rem;
+    }
+    #result-container {
+    min-height: 150px;
+    margin-top: 1rem;
+    }
+    .copy-btn {
+    cursor: pointer;
+    transition: all 0.3s;
+    }
+    .copy-btn:hover {
+    color: #007bff;
+    }
+    #upload-progress {
+    display: none;
+    margin-top: 10px;
+    }
+    .seed-container {
+    word-break: break-all;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+    font-family: monospace;
+    }
+    .bip39-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-left: 10px;
+    }
+    .validate-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    }
+    .chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    margin-bottom: 20px;
+    }
+    .security-metrics {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    }
+    .entropy-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    }
+    .strength-meter {
+    height: 10px;
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    }
+    .strength-level {
+    height: 100%;
+    transition: width 0.3s ease;
+    }
+    .strength-weak { background-color: #dc3545; }
+    .strength-medium { background-color: #ffc107; }
+    .strength-strong { background-color: #28a745; }
+    .strength-very-strong { background-color: #20c997; }
+
+
+    /* 添加数字专用样式 */
+    .crypto-number {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-weight: 600;
+    color: #0066cc;
+    letter-spacing: 0.5px;
+    }
+
+    .math-exp {
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-style: italic;
+    color: #006400;
+    }
+
+    /* 修改表格式布局一致性 */
+    #crack-time .row {
+    margin-bottom: 8px;
+    align-items: center;
+    }
+
+    #crack-time .col-md-9 {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    }
+{% endblock %}

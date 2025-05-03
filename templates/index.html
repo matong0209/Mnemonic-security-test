@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 区块链助记词安全性测试系统{% endblock %}
+
+{% block content %}
+    <!-- 显示消息提示 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="hero text-center">
+        <div class="container">
+            <h1 class="display-4">
+                <i class="fas fa-key me-3"></i>区块链助记词安全性测试系统
+                <span class="bip39-badge"><i class="fas fa-shield-alt me-1"></i>BIP39标准</span>
+            </h1>
+            <p class="lead">一个基于Python
+                Flask框架的区块链助记词安全性测试系统，遵循BIP39标准协议，专注于助记词的生成、验证和安全性评估。系统提供了全面的区块链助记词管理和多链地址派生功能，包括生成12至24个单词的标准BIP39助记词(128-256位熵)、支持8种语言词库、助记词有效性验证、多链(比特币、以太坊、狗狗币)钱包地址派生、区块链余额查询以及完整的种子派生过程可视化。</p>
+            <a href="{{ url_for('mnemonic') }}" class="btn btn-light btn-lg mt-3">
+                <i class="fas fa-brain me-2"></i>开始生成
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>BIP39标准</h3>
+                <p>完全实现Bitcoin改进提案BIP39，生成兼容区块链标准的助记词和种子</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <h3>多语言支持</h3>
+                <p>支持中文简体、中文繁体、英文、韩语、日语等多种语言的助记词生成，满足不同场景需求</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3>种子派生</h3>
+                <p>从助记词派生出512位种子，可用于后续的确定性密钥生成和区块链应用</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：隐藏字段用于JS判断登录状态 -->
+    <input type="hidden" id="is-logged-in" value="{{ 'true' if session.get('user_id') else 'false' }}">
+    <input type="hidden" id="mnemonic-url" value="{{ url_for('mnemonic') }}">
+    <input type="hidden" id="login-url" value="{{ url_for('login') }}">
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取登录状态和URL
+            var isLoggedIn = document.getElementById('is-logged-in').value === 'true';
+            var mnemonicUrl = document.getElementById('mnemonic-url').value;
+            var loginUrl = document.getElementById('login-url').value;
+
+            // 为所有助记词链接添加点击事件
+            var mnemonicLinks = document.querySelectorAll('a[href="' + mnemonicUrl + '"]');
+            for (var i = 0; i < mnemonicLinks.length; i++) {
+                mnemonicLinks[i].addEventListener('click', function (event) {
+                    if (!isLoggedIn) {
+                        event.preventDefault();
+                        Swal.fire({
+                            title: '请先登录',
+                            text: '您需要登录后才能访问助记词生成功能',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: '去登录',
+                            cancelButtonText: '取消'
+                        }).then(function (result) {
+                            if (result.isConfirmed) {
+                                window.location.href = loginUrl;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block additional_styles %}
+    .hero {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .feature-icon {
+    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 1rem;
+    }
+    .feature-card {
+    height: 100%;
+    padding: 1.5rem;
+    text-align: center;
+    }
+    .bip39-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-left: 10px;
+    vertical-align: middle;
+    }
+{% endblock %}

@@ -1,0 +1,8 @@
+/app copy.py
+/debug.log
+/node_modules
+/package-lock.json
+/package.json
+/requirements.txt
+/translations
+/__pycache__

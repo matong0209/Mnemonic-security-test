@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}注册 - 助记词生成系统{% endblock %}
+
+
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-user-plus me-2"></i>用户注册
+                </h2>
+
+                <!-- 显示消息提示 -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="post" action="{{ url_for('register') }}">
+                    <div class="form-group">
+                        <label for="username" class="form-label">用户名</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="请输入用户名" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">电子邮箱</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="请输入电子邮箱" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">密码</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="请输入密码" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password" class="form-label">确认密码</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                               placeholder="请再次输入密码" required>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-register">
+                            <i class="fas fa-user-plus me-2"></i>注册
+                        </button>
+                    </div>
+                </form>
+
+                <div class="login-link">
+                    已有账号？<a href="{{ url_for('login') }}">立即登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // 表单验证
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function (event) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+
+                if (password !== confirmPassword) {
+                    event.preventDefault();
+                    Swal.fire({
+                        title: '错误',
+                        text: '两次输入的密码不一致',
+                        icon: 'error',
+                        confirmButtonText: '确定'
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block additional_styles %}
+    .form-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .form-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #343a40;
+    }
+    .form-group {
+    margin-bottom: 20px;
+    }
+    .btn-register {
+    width: 100%;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    }
+    .login-link {
+    text-align: center;
+    margin-top: 15px;
+    }
+{% endblock %}

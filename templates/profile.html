@@ -1,0 +1,828 @@
+{% extends 'base.html' %}
+
+{% block title %}个人资料 - 助记词生成系统{% endblock %}
+
+
+{% block content %}
+
+
+    <!-- 修改描述模态框 -->
+    <div class="modal fade" id="editDescriptionModal" tabindex="-1" aria-labelledby="editDescriptionModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDescriptionModalLabel">修改描述</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-history-id">
+                    <div class="mb-3">
+                        <label for="history-description" class="form-label">描述</label>
+                        <textarea class="form-control" id="history-description" rows="3"
+                                  placeholder="为这组助记词添加描述，便于后续查找"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="save-description-btn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 在修改描述模态框后添加 -->
+    <!-- 查看助记词模态框 -->
+    <div class="modal fade" id="viewMnemonicModal" tabindex="-1" aria-labelledby="viewMnemonicModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewMnemonicModalLabel">
+                        <i class="fas fa-key me-2"></i>查看助记词
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>安全提示：</strong> 请妥善保管您的助记词,5秒后自动隐藏。
+                    </div>
+
+                    <div class="card bg-light mb-3">
+                        <div class="card-header bg-light text-dark d-flex justify-content-between align-items-center">
+                            <span>您的BIP39助记词</span>
+                            <button class="btn btn-sm btn-outline-secondary copy-mnemonic">
+                                <i class="fas fa-copy me-1"></i>复制
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="mnemonic-container p-3 bg-white border rounded">
+                                <p id="mnemonic-words" class="mb-0 user-select-all"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>警告：</strong> 任何获取您助记词的人都能控制您的区块链资产！
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码模态框 -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">
+                        <i class="fas fa-key me-2"></i>修改密码
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="change-password-form">
+                        <div class="mb-3">
+                            <label for="current-password" class="form-label">当前密码</label>
+                            <input type="password" class="form-control" id="current-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-password" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="new-password" required>
+                            <div class="form-text">密码长度至少8位，包含字母和数字</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm-password" class="form-label">确认新密码</label>
+                            <input type="password" class="form-control" id="confirm-password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="save-password-btn">保存更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑资料模态框 -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">
+                        <i class="fas fa-user-edit me-2"></i>编辑个人资料
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-profile-form">
+                        <div class="mb-3">
+                            <label for="edit-username" class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="edit-username" value="{{ user.username }}"
+                                   required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-email" class="form-label">电子邮箱</label>
+                            <input type="email" class="form-control" id="edit-email" value="{{ user.email }}" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="save-profile-btn">保存更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="profile-container">
+        <!-- 显示消息提示 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h2 class="profile-username">{{ user.username }}</h2>
+            <p class="profile-email">{{ user.email }}</p>
+        </div>
+
+        <div class="profile-section">
+            <h3 class="profile-section-title">
+                <i class="fas fa-cog me-2"></i>账户管理
+            </h3>
+            <div class="d-flex flex-wrap">
+                <button type="button" class="btn btn-primary btn-action" data-bs-toggle="modal"
+                        data-bs-target="#changePasswordModal">
+                    <i class="fas fa-key me-2"></i>修改密码
+                </button>
+                <button type="button" class="btn btn-info btn-action" data-bs-toggle="modal"
+                        data-bs-target="#editProfileModal">
+                    <i class="fas fa-edit me-2"></i>编辑资料
+                </button>
+            </div>
+        </div>
+
+        <!-- 替换以下部分 -->
+        <div class="profile-section">
+            <h3 class="profile-section-title">
+                <i class="fas fa-history me-2"></i>我的助记词历史
+            </h3>
+
+            <!-- 历史记录内容区 -->
+            <div id="history-container">
+                <!-- 加载中提示 -->
+                <div class="text-center my-4" id="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="text-muted mt-2">正在加载历史记录...</p>
+                </div>
+
+                <!-- 历史记录表格 -->
+                <div id="history-table" class="table-responsive d-none">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>创建时间</th>
+                            <th>语言</th>
+                            <th>单词数量</th>
+                            <!-- <th>描述</th> -->
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="history-rows">
+                        <!-- 动态加载历史记录 -->
+                        </tbody>
+                    </table>
+
+                    <!-- 分页控件 -->
+                    <nav aria-label="助记词历史分页">
+                        <ul class="pagination justify-content-center" id="pagination-container">
+                            <!-- 动态加载分页 -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- 无记录提示 -->
+                <div id="no-history" class="text-center my-5 d-none">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>您还没有生成过助记词
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('mnemonic') }}" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i>生成新助记词
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+        // 当前页码
+        let currentPage = 1;
+
+        // 加载历史记录
+        function loadHistory(page = 1) {
+            currentPage = page;
+            $('#loading').removeClass('d-none');
+            $('#history-table').addClass('d-none');
+            $('#no-history').addClass('d-none');
+
+            $.getJSON(`/api/mnemonic_history?page=${page}&per_page=5`)
+                .done(function (data) {
+                    $('#loading').addClass('d-none');
+
+                    if (data.history.length === 0 && page === 1) {
+                        $('#no-history').removeClass('d-none');
+                        return;
+                    }
+
+                    // 显示表格
+                    $('#history-table').removeClass('d-none');
+
+                    // 清空现有行
+                    $('#history-rows').empty();
+
+                    // 添加新行
+                    data.history.forEach(function (item) {
+                        const languageBadge = `<span class="badge bg-info">${item.language}</span>`;
+                        const countBadge = `<span class="badge bg-secondary">${item.word_count}个单词</span>`;
+
+                        $('#history-rows').append(`
+                        <tr>
+                            <td>${item.created_at}</td>
+                            <td>${languageBadge}</td>
+                            <td>${countBadge}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-history" 
+                                    data-id="${item.id}">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+
+                                <button type="button" class="btn btn-sm btn-outline-success view-mnemonic me-1" 
+                                    data-id="${item.id}" data-seed-hash="${item.seed_hash}"><i class="fas fa-eye"></i> 查看
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                    });
+
+                    // 更新分页
+                    updatePagination(data.pagination);
+                })
+                .fail(function (jqXHR) {
+                    $('#loading').addClass('d-none');
+                    Swal.fire({
+                        title: '加载失败',
+                        text: jqXHR.responseJSON?.error || '获取历史记录时发生错误',
+                        icon: 'error'
+                    });
+                });
+        }
+
+        // 更新分页控件
+        function updatePagination(pagination) {
+            const container = $('#pagination-container');
+            container.empty();
+
+            // 如果只有一页，不显示分页
+            if (pagination.pages <= 1) return;
+
+            // 上一页
+            container.append(`
+            <li class="page-item ${pagination.current_page <= 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${pagination.current_page - 1}">上一页</a>
+            </li>
+        `);
+
+            // 页码
+            for (let i = 1; i <= pagination.pages; i++) {
+                // 如果页数太多，显示省略号
+                if (pagination.pages > 7) {
+                    if (i === 1 ||
+                        i === pagination.pages ||
+                        (i >= pagination.current_page - 1 && i <= pagination.current_page + 1)) {
+                        container.append(`
+                        <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                        </li>
+                    `);
+                    } else if (i === pagination.current_page - 2 || i === pagination.current_page + 2) {
+                        container.append(`<li class="page-item disabled"><a class="page-link">...</a></li>`);
+                    }
+                } else {
+                    container.append(`
+                    <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `);
+                }
+            }
+
+            // 下一页
+            container.append(`
+            <li class="page-item ${pagination.current_page >= pagination.pages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${pagination.current_page + 1}">下一页</a>
+            </li>
+        `);
+        }
+
+        // 页面加载完成后执行
+        $(document).ready(function () {
+            // 初始加载
+            loadHistory();
+
+            // 分页点击事件
+            $(document).on('click', '.page-link', function (e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                if (page && page !== currentPage) {
+                    loadHistory(page);
+                }
+            });
+
+            // 编辑描述点击事件
+            $(document).on('click', '.edit-description', function () {
+                const id = $(this).data('id');
+                const description = $(this).data('description');
+
+                $('#edit-history-id').val(id);
+                $('#history-description').val(description);
+
+                const modal = new bootstrap.Modal(document.getElementById('editDescriptionModal'));
+                modal.show();
+            });
+
+            // 保存描述点击事件
+            $('#save-description-btn').click(function () {
+                const id = $('#edit-history-id').val();
+                const description = $('#history-description').val();
+
+                $.ajax({
+                    url: '/api/mnemonic_history/update_description',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        id: id,
+                        description: description
+                    }),
+                    success: function (response) {
+                        bootstrap.Modal.getInstance(document.getElementById('editDescriptionModal')).hide();
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: '成功',
+                                text: '描述已更新',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                loadHistory(currentPage);
+                            });
+                        } else {
+                            Swal.fire({
+                                title: '错误',
+                                text: response.error || '更新失败',
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function (jqXHR) {
+                        Swal.fire({
+                            title: '错误',
+                            text: jqXHR.responseJSON?.error || '更新失败',
+                            icon: 'error'
+                        });
+                    }
+                });
+            });
+
+            // 删除历史点击事件
+            $(document).on('click', '.delete-history', function () {
+                const id = $(this).data('id');
+
+                Swal.fire({
+                    title: '确认删除',
+                    text: '您确定要删除这条助记词生成记录吗？此操作无法撤销。',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '确认删除',
+                    cancelButtonText: '取消',
+                    confirmButtonColor: '#dc3545'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/api/mnemonic_history/delete',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({id: id}),
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: '成功',
+                                        text: '记录已删除',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        loadHistory(currentPage);
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: '错误',
+                                        text: response.error || '删除失败',
+                                        icon: 'error'
+                                    });
+                                }
+                            },
+                            error: function (jqXHR) {
+                                Swal.fire({
+                                    title: '错误',
+                                    text: jqXHR.responseJSON?.error || '删除失败',
+                                    icon: 'error'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+
+        // 在scripts块中添加
+
+        // 查看助记词点击事件
+        // 查看助记词点击事件
+        $(document).on('click', '.view-mnemonic', function () {
+            const id = $(this).data('id');
+
+            // 显示加载状态
+            $('#mnemonic-words').html('<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> 正在获取助记词...</div>');
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('viewMnemonicModal'));
+            modal.show();
+
+            // 获取助记词
+            $.ajax({
+                url: '/api/mnemonic_history/get_mnemonic',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({id: id}),
+                success: function (response) {
+                    if (response.success && response.mnemonic) {
+                        $('#mnemonic-words').text(response.mnemonic);
+
+                        // 添加提示，鼓励用户保存
+                        $('#viewMnemonicModal .modal-body').prepend(`
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>成功获取助记词</strong> - 请立即保存！系统不会永久存储明文助记词。
+                    </div>
+                `);
+
+                        // 60秒后自动隐藏助记词
+                        setTimeout(function () {
+                            if (document.getElementById('viewMnemonicModal').classList.contains('show')) {
+                                $('#mnemonic-words').text('**** 出于安全考虑，助记词已自动隐藏 ****');
+                                // 移除成功提示
+                                $('#viewMnemonicModal .alert-success').remove();
+                            }
+                        }, 5000); // 5秒
+                    } else {
+                        $('#mnemonic-words').html(`
+                    <div class="alert alert-danger mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        ${response.error || '无法获取助记词'}
+                    </div>
+                `);
+                    }
+                },
+                error: function (jqXHR) {
+                    $('#mnemonic-words').html(`
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${jqXHR.responseJSON?.error || '获取助记词失败'}
+                </div>
+            `);
+                }
+            });
+        });
+        // 复制助记词
+        $(document).on('click', '.copy-mnemonic', function () {
+            const text = $('#mnemonic-words').text();
+
+            if (text && !text.includes('无法获取助记词')) {
+                navigator.clipboard.writeText(text).then(function () {
+                    Swal.fire({
+                        title: '已复制',
+                        text: '助记词已复制到剪贴板',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }).catch(function (err) {
+                    console.error('复制失败: ', err);
+                    Swal.fire({
+                        title: '复制失败',
+                        text: '无法复制到剪贴板，请手动复制',
+                        icon: 'error'
+                    });
+                });
+            }
+        });
+
+        // 模态框关闭时清空助记词
+        $('#viewMnemonicModal').on('hidden.bs.modal', function () {
+            $('#mnemonic-words').text('');
+        });
+
+
+        // 修改密码功能
+        $('#save-password-btn').click(function () {
+            // 表单验证
+            const currentPassword = $('#current-password').val();
+            const newPassword = $('#new-password').val();
+            const confirmPassword = $('#confirm-password').val();
+
+            // 检查空值
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                Swal.fire({
+                    title: '输入错误',
+                    text: '所有字段都为必填项',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 检查密码长度
+            if (newPassword.length < 8) {
+                Swal.fire({
+                    title: '密码太短',
+                    text: '新密码长度至少为8位',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 检查密码包含字母和数字
+            if (!/[a-zA-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+                Swal.fire({
+                    title: '密码不够复杂',
+                    text: '新密码必须同时包含字母和数字',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 检查两次密码是否一致
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    title: '密码不一致',
+                    text: '两次输入的新密码不一致',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 显示加载状态
+            const saveBtn = $('#save-password-btn');
+            const originalBtnText = saveBtn.html();
+            saveBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>保存中...');
+            saveBtn.prop('disabled', true);
+
+            // 发送修改请求
+            $.ajax({
+                url: '/api/user/change_password',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                }),
+                success: function (response) {
+                    // 恢复按钮状态
+                    saveBtn.html(originalBtnText);
+                    saveBtn.prop('disabled', false);
+
+                    if (response.success) {
+                        // 关闭模态框
+                        bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+
+                        // 清空表单
+                        $('#change-password-form').trigger('reset');
+
+                        // 显示成功消息
+                        Swal.fire({
+                            title: '密码已修改',
+                            text: '您的密码已成功更新',
+                            icon: 'success'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: '修改失败',
+                            text: response.error || '密码修改失败，请重试',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function (jqXHR) {
+                    // 恢复按钮状态
+                    saveBtn.html(originalBtnText);
+                    saveBtn.prop('disabled', false);
+
+                    Swal.fire({
+                        title: '修改失败',
+                        text: jqXHR.responseJSON?.error || '服务器错误，请稍后重试',
+                        icon: 'error'
+                    });
+                }
+            });
+        });
+
+        // 编辑资料功能
+        $('#save-profile-btn').click(function () {
+            // 表单验证
+            const username = $('#edit-username').val();
+            const email = $('#edit-email').val();
+
+            // 检查必填项
+            if (!username || !email) {
+                Swal.fire({
+                    title: '输入错误',
+                    text: '用户名和电子邮箱为必填项',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 检查邮箱格式
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                Swal.fire({
+                    title: '邮箱格式错误',
+                    text: '请输入有效的电子邮箱地址',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // 显示加载状态
+            const saveBtn = $('#save-profile-btn');
+            const originalBtnText = saveBtn.html();
+            saveBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>保存中...');
+            saveBtn.prop('disabled', true);
+
+            // 发送更新请求
+            $.ajax({
+                url: '/api/user/update_profile',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    username: username,
+                    email: email
+                }),
+                success: function (response) {
+                    // 恢复按钮状态
+                    saveBtn.html(originalBtnText);
+                    saveBtn.prop('disabled', false);
+
+                    if (response.success) {
+                        // 关闭模态框
+                        bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+
+                        // 更新页面显示
+                        $('.profile-username').text(username);
+                        $('.profile-email').text(email);
+
+                        // 更新导航栏用户名
+                        if (response.username) {
+                            $('#navbarDropdown .username-text').text(response.username);
+                        }
+
+                        // 显示成功消息
+                        Swal.fire({
+                            title: '资料已更新',
+                            text: '您的个人资料已成功更新',
+                            icon: 'success'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: '更新失败',
+                            text: response.error || '资料更新失败，请重试',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function (jqXHR) {
+                    // 恢复按钮状态
+                    saveBtn.html(originalBtnText);
+                    saveBtn.prop('disabled', false);
+
+                    Swal.fire({
+                        title: '更新失败',
+                        text: jqXHR.responseJSON?.error || '服务器错误，请稍后重试',
+                        icon: 'error'
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+
+{% block additional_styles %}
+    .profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    }
+    .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    }
+    .profile-username {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    }
+    .profile-email {
+    color: #6c757d;
+    margin-bottom: 0;
+    }
+    .profile-section {
+    margin-bottom: 30px;
+    }
+    .profile-section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    }
+    .btn-action {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    }
+    /* 新增样式 */
+    .table-responsive {
+    border-radius: 5px;
+    overflow: hidden;
+    }
+    .badge {
+    font-size: 0.8em;
+    padding: 3px 8px;
+    border-radius: 10px;
+    }
+
+    // 在additional_styles块中添加
+
+    .mnemonic-container {
+    font-family: monospace;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    word-spacing: 0.5rem;
+    }
+    .copy-mnemonic:hover {
+    background-color: #d4d4d4;
+    }
+{% endblock %}
