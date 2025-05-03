@@ -13,7 +13,7 @@
 
 一个基于Python Flask开发的区块链助记词生成与安全测试系统，严格遵循BIP39标准协议，为区块链用户提供全面的助记词生成、验证、管理与分析工具。
 
-**在线体验地址：**https://www.mnemonicsafe.top/
+在线体验地址：https://www.mnemonicsafe.top/
 
 ## 项目简介
 
