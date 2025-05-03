@@ -39,7 +39,7 @@ git clone https://github.com/yourusername/blockchain-mnemonic-system.git
 cd blockchain-mnemonic-system
 ```
 
-      2.安装依赖
+2.安装依赖
 
 ```shell
 pip install -r requirements.txt
@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 
 
-      3.初始化数据库
+3.初始化数据库
 
 ```shell
 flask db upgrade
