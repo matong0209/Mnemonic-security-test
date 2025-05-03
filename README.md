@@ -32,7 +32,7 @@
 
 ## 安装与部署
 
-```bash
+
 # 1. 克隆代码库
 git clone https://github.com/yourusername/blockchain-mnemonic-system.git
 cd blockchain-mnemonic-system
