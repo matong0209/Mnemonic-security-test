@@ -31,7 +31,6 @@
 本项目采用纯Python实现BIP39规范，不依赖第三方助记词库，通过底层密码学原理完成熵生成、校验和计算、助记词映射和种子派生全过程。集成多家区块链API服务，提供高可靠性的链上数据查询，并内置备用API自动切换机制，保证服务稳定性。
 
 ## 安装与部署
-
 1. 克隆代码库
 
 ```shell
@@ -40,7 +39,7 @@ git clone https://github.com/yourusername/blockchain-mnemonic-system.git
 cd blockchain-mnemonic-system
 ```
 
-​	2.安装依赖
+​2.安装依赖
 
 ```shell
 pip install -r requirements.txt
@@ -48,7 +47,7 @@ pip install -r requirements.txt
 
 
 
-​	3.初始化数据库
+​3.初始化数据库
 
 ```shell
 flask db upgrade
@@ -56,7 +55,7 @@ flask db upgrade
 
 
 
-​	4.启动应用
+​4.启动应用
 
 ```shell
 flask run
