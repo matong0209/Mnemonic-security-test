@@ -10,6 +10,7 @@
 
 
 
+
 一个基于Python Flask开发的区块链助记词生成与安全测试系统，严格遵循BIP39标准协议，为区块链用户提供全面的助记词生成、验证、管理与分析工具。
 
 ## 项目简介
@@ -39,7 +40,7 @@ git clone https://github.com/yourusername/blockchain-mnemonic-system.git
 cd blockchain-mnemonic-system
 ```
 
-2.安装依赖
+​	2.安装依赖
 
 ```shell
 pip install -r requirements.txt
@@ -47,7 +48,7 @@ pip install -r requirements.txt
 
 
 
-3.初始化数据库
+​	3.初始化数据库
 
 ```shell
 flask db upgrade
@@ -94,4 +95,3 @@ flask run
 ## 免责声明
 
 **注意**：本系统仅用于安全研究与教育目的，不建议将生成的助记词用于实际加密资产管理。项目中的API密钥仅为示例，请在实际使用时替换为您自己的密钥。系统不对因使用本工具导致的任何资产损失负责。
-
