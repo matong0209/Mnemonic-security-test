@@ -9,6 +9,7 @@
 
 
 
+**在线体验地址：**https://www.mnemonicsafe.top/
 
 
 一个基于Python Flask开发的区块链助记词生成与安全测试系统，严格遵循BIP39标准协议，为区块链用户提供全面的助记词生成、验证、管理与分析工具。
@@ -33,25 +34,29 @@
 ## 安装与部署
 
 1. 克隆代码库
-    ```bash
-    git clone https://github.com/yourusername/blockchain-mnemonic-system.git
-    cd blockchain-mnemonic-system
-    ```
+
+   ```bash
+   git clone https://github.com/yourusername/blockchain-mnemonic-system.git
+   cd blockchain-mnemonic-system
+   ```
 
 2. 安装依赖
-    ```bash
-    pip install -r requirements.txt
-    ```
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. 初始化数据库
-    ```bash
-    flask db upgrade
-    ```
+
+   ```bash
+   flask db upgrade
+   ```
 
 4. 启动应用
-    ```bash
-    flask run
-    ```
+
+   ```bash
+   flask run
+   ```
 
 
 
