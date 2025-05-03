@@ -1,12 +1,11 @@
 # BIP39助记词安全管理系统
 
 
-
-<img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
-
-<img alt="Python" src="https://img.shields.io/badge/python-3.8+-green.svg">
-
-<img alt="Flask" src="https://img.shields.io/badge/flask-2.0+-orange.svg">
+<p align="center">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.8+-green.svg">
+  <img alt="Flask" src="https://img.shields.io/badge/flask-2.0+-orange.svg">
+</p>
 
 
 
