@@ -12,10 +12,10 @@ import ecdsa
 
 # 启用以太坊账户的助记词功能
 # 注意：这是未经审计的功能，仅供测试使用
-try:
-    Account.enable_unaudited_hdwallet_features()
-except Exception as e:
-    print(f"警告: 无法启用以太坊助记词功能: {str(e)}")
+# try:
+#     Account.enable_unaudited_hdwallet_features()
+# except Exception as e:
+#     print(f"警告: 无法启用以太坊助记词功能: {str(e)}")
 
 # API密钥和端点
 ETHERSCAN_API_KEY = "B38I8TH52C94KMBSIQ9PB11N9DHGCZ5HSJ"  # Etherscan API密钥
