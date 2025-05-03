@@ -32,19 +32,35 @@
 
 ## 安装与部署
 
+1. 克隆代码库
 
-# 1. 克隆代码库
+```shell
 git clone https://github.com/yourusername/blockchain-mnemonic-system.git
+
 cd blockchain-mnemonic-system
+```
 
-# 2. 安装依赖
+​	2.安装依赖
+
+```shell
 pip install -r requirements.txt
+```
 
-# 3. 初始化数据库
+
+
+​	3.初始化数据库
+
+```shell
 flask db upgrade
+```
 
-# 4. 启动应用
+
+
+​	4.启动应用
+
+```shell
 flask run
+```
 
 
 
