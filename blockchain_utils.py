@@ -1,13 +1,10 @@
-import binascii
 from datetime import datetime, timezone
-import json
 import requests
 from eth_account import Account
 from web3 import Web3
 import hashlib
 import secrets
 import base58
-import hmac
 import ecdsa
 
 # 启用以太坊账户的助记词功能
