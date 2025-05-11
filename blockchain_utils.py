@@ -39,14 +39,14 @@ BIP39_LANGUAGE_MAP = {
 API_ENDPOINTS = {
     "比特币": "https://blockchain.info/address/{address}?format=json",
     # 每日请求限制: 100000个请求
-    "以太坊": "https://api.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey=" + ETHERSCAN_API_KEY,
+    "以太坊": f"https://api.blockcypher.com/v1/eth/main/addrs/{address}/balance",
     "狗狗币": "https://api.blockcypher.com/v1/doge/main/addrs/{address}/balance"  # 每天1000个请求,每小时100个请求,每秒3个请求
 }
 
 # 备用免费API端点(不需要API密钥)
 BACKUP_API_ENDPOINTS = {
     "比特币": "https://blockchain.info/address/{address}?format=json",
-    # "以太坊": "https://api.blockchair.com/ethereum/dashboards/address/{address}",
+    "以太坊": f"https://api.blockcypher.com/v1/eth/main/addrs/{address}/balance",
     "狗狗币": "https://api.blockcypher.com/v1/doge/main/addrs/{address}/balance"
 }
 
@@ -370,37 +370,18 @@ def query_address_balance(chain_name, address):
                 result["总发送"] = 0.0
 
         elif chain_name == "以太坊":
-            if data.get("status") == "1":
+            if response.status_code == 200:
                 try:
-                    # 1. 解析余额
-                    balance = int(data.get("result", "0"))
-                    result["余额"] = float(Web3.from_wei(balance, "ether"))
-
-                    # 2. 调用 Etherscan proxy 接口获取交易数量（Nonce）
-                    proxy_url = (
-                        f"https://api.etherscan.io/api"
-                        f"?module=proxy"
-                        f"&action=eth_getTransactionCount"
-                        f"&address={address}"
-                        f"&tag=latest"
-                        f"&apikey={ETHERSCAN_API_KEY}"
-                    )
-                    proxy_resp = requests.get(proxy_url).json()
-                    if proxy_resp.get("result"):
-                        # result 是十六进制字符串，例如 "0x10"
-                        result["交易数量"] = int(proxy_resp["result"], 16)
-                    else:
-                        result["交易数量"] = 0
-
-                except (ValueError, TypeError, requests.RequestException) as e:
-                    # 如果出错，仍然保证有余额字段
+                    result["余额"] = float(data.get("balance", 0)) / 1000000000000000000  # 转换为ETH单位 (1 ETH = 10^18 wei)
+                except (ValueError, TypeError):
                     result["余额"] = 0.0
-                    result["交易数量"] = 0
-                    result["错误"] = f"解析以太坊数据失败: {e}"
+
+                result["交易数量"] = data.get("n_tx", 0)
+            elif "error" in data:
+                # 尝试使用备用API
+                return _try_backup_api(chain_name, address)
             else:
-                # status != "1" 时也尝试设置默认值
                 result["余额"] = 0.0
-                result["交易数量"] = 0
                 result["错误"] = data.get("message", "查询失败")
         elif chain_name == "狗狗币":
             if response.status_code == 200:
