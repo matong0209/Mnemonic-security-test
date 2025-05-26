@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+import re
 import os
 import binascii
 import hashlib
@@ -48,7 +50,6 @@ class MnemonicHistory(db.Model):
     user = db.relationship('User', backref=db.backref('mnemonic_histories', lazy=True))
 
 
-# 在MnemonicHistory类定义后添加
 
 # 安全日志模型
 class SecurityLog(db.Model):
@@ -133,19 +134,51 @@ class MnemonicGenerator:
         return self.delimiter.join(words)
     
     def check(self, mnemonic: str) -> bool:
+        """
+        验证 BIP39 助记词的有效性
+        
+        参数:
+            mnemonic: 待验证的助记词字符串
+        
+        返回:
+            bool: 助记词是否有效
+        """
+        # 标准化助记词字符串，统一字符编码和格式
         mn = self.normalize_string(mnemonic)
+        
+        # 根据语言特性使用正确的分隔符拆分助记词（普通空格或日语全角空格）
         parts = mn.split(self.delimiter)
+        
+        # BIP39 规范要求助记词必须是 12/15/18/21/24 个单词之一
         if len(parts) not in (12,15,18,21,24):
             return False
+        
         try:
+            # 将每个单词转换为对应的 11 位二进制索引值，并拼接成完整二进制字符串
+            # 每个单词在词库中有一个 0-2047 的索引，转为 11 位二进制 (2^11=2048)
             bitstr = ''.join(bin(self.wordlist.index(w))[2:].zfill(11) for w in parts)
         except ValueError:
+            # 如果存在不在词库中的单词，则验证失败
             return False
+        
+        # 计算二进制串总长度
         l = len(bitstr)
+        
+        # 提取熵部分 - 占总位数的 32/33
+        # 例如: 12个单词 = 132位，其中 128位是熵，4位是校验和 (128/32=4)
         ent_bits = bitstr[:l//33*32]
-        cs_bits  = bitstr[l//33*32:]
+        
+        # 提取校验和部分 - 剩余的 1/33 位
+        cs_bits = bitstr[l//33*32:]
+        
+        # 将熵部分二进制串转换回字节格式
         ent_bytes = int(ent_bits,2).to_bytes(len(ent_bits)//8,'big')
+        
+        # 重新计算熵的 SHA-256 哈希值并转为二进制表示
         hash_bits = bin(int(hashlib.sha256(ent_bytes).hexdigest(),16))[2:].zfill(256)
+        
+        # 验证: 计算得到的哈希值前几位是否与存储在助记词中的校验和匹配
+        # 如果匹配则助记词有效，否则无效
         return hash_bits[:len(cs_bits)] == cs_bits
     
     @staticmethod
@@ -416,13 +449,6 @@ def update_profile():
 
 
 
-
-
-
-# 导入必要的模块
-from werkzeug.security import generate_password_hash, check_password_hash
-import re
-
 # 修改密码API
 @app.route('/api/user/change_password', methods=['POST'])
 def change_password():
@@ -493,8 +519,7 @@ def delete_mnemonic_history():
     
     return jsonify({"success": True})
 
-
-
+# 获取助记词历史记录详情
 @app.route('/api/mnemonic_history/get_mnemonic', methods=['POST'])
 def get_mnemonic():
     if 'user_id' not in session:
@@ -606,6 +631,25 @@ def query_transactions_api():
     if "error" in txs and not txs.get("交易"):
         return jsonify({"success":False,"error":txs["error"]}),404
     return jsonify({"success":True,"transaction_info":txs})
+
+# 获取当前语言设置
+@app.route('/api/get_language')
+def get_language():
+    # 从会话中获取语言设置，如果不存在则默认为中文
+    lang = session.get('language', 'zh')
+    return jsonify({"language": lang})
+
+# 设置语言
+@app.route('/api/set_language', methods=['POST'])
+def set_language():
+    data = request.json or {}
+    lang = data.get('language')
+    
+    if lang in ['zh', 'en']:
+        session['language'] = lang
+        return jsonify({"success": True, "language": lang})
+    else:
+        return jsonify({"success": False, "error": "不支持的语言"}), 400
 
 # 初始化数据库 & 启动
 with app.app_context():

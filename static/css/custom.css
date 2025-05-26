@@ -1,0 +1,66 @@
+:root {
+    --blue: #4dabf7;  /* 浅蓝色 */
+    --primary: #4dabf7;  /* 浅蓝色 */
+}
+
+/* 覆盖 Bootstrap 的蓝色 */
+.btn-primary {
+    background-color: #4dabf7 !important;
+    border-color: #4dabf7 !important;
+}
+
+.btn-primary:hover {
+    background-color: #339af0 !important;
+    border-color: #339af0 !important;
+}
+
+/* 覆盖文本颜色 */
+.text-primary {
+    color: #4dabf7 !important;
+}
+
+/* 覆盖背景颜色 */
+.bg-primary {
+    background-color: #4dabf7 !important;
+}
+
+/* 覆盖边框颜色 */
+.border-primary {
+    border-color: #4dabf7 !important;
+}
+
+/* 覆盖链接颜色 */
+a {
+    color: #4dabf7;
+}
+
+a:hover {
+    color: #339af0;
+}
+
+/* 覆盖导航栏激活状态 */
+.nav-sidebar .nav-item .nav-link.active {
+    background-color: #4dabf7 !important;
+}
+
+/* 覆盖进度条颜色 */
+.progress-bar {
+    background-color: #4dabf7 !important;
+}
+
+/* 覆盖分页激活状态 */
+.page-item.active .page-link {
+    background-color: #4dabf7 !important;
+    border-color: #4dabf7 !important;
+}
+
+/* 覆盖徽章颜色 */
+.badge-primary {
+    background-color: #4dabf7 !important;
+}
+
+/* 覆盖自定义控件颜色 */
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #4dabf7 !important;
+    border-color: #4dabf7 !important;
+} 

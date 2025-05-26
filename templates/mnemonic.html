@@ -16,7 +16,7 @@
         <div class="col-lg-12 mb-4">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="mb-0"><i class="fas fa-brain me-2"></i>助记词生成工具</h3>
+                    <h3 class="mb-0"><i class="fas fa-brain me-2"></i><span data-i18n="mnemonic_tool">助记词生成工具</span></h3>
                 </div>
                 <div class="card-body">
                     <ul class="nav nav-tabs" id="mnemonicTabs" role="tablist">
@@ -24,21 +24,21 @@
                             <button class="nav-link active" id="generate-tab" data-bs-toggle="tab"
                                     data-bs-target="#generate" type="button" role="tab"
                                     aria-controls="generate" aria-selected="true">
-                                <i class="fas fa-random me-2"></i>生成助记词
+                                <i class="fas fa-random me-2"></i><span data-i18n="generate_tab">生成助记词</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="validate-tab" data-bs-toggle="tab"
                                     data-bs-target="#validate" type="button" role="tab"
                                     aria-controls="validate" aria-selected="false">
-                                <i class="fas fa-check-circle me-2"></i>验证助记词
+                                <i class="fas fa-check-circle me-2"></i><span data-i18n="validate_tab">验证助记词</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="blockchain-tab" data-bs-toggle="tab"
                                     data-bs-target="#blockchain" type="button" role="tab"
                                     aria-controls="blockchain" aria-selected="false">
-                                <i class="fas fa-link me-2"></i>区块链地址
+                                <i class="fas fa-link me-2"></i><span data-i18n="blockchain_tab">区块链地址</span>
                             </button>
                         </li>
                     </ul>
@@ -49,14 +49,14 @@
                              aria-labelledby="generate-tab">
                             <div class="alert alert-info mb-4">
                                 <i class="fas fa-info-circle me-2"></i>
-                                本系统仅使用符合<strong>BIP39标准</strong>的助记词词库，确保生成的助记词可用于加密货币钱包和区块链应用。
+                                <span data-i18n="info_tip">本系统仅使用符合<strong>BIP39标准</strong>的助记词词库，确保生成的助记词可用于加密货币钱包和区块链应用。</span>
                             </div>
                             <form id="generate-form">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="word-count">
-                                                <i class="fas fa-hashtag me-2"></i>词语数量
+                                                <i class="fas fa-hashtag me-2"></i><span data-i18n="word_count">词语数量</span>
                                             </label>
                                             <select class="form-select" id="word-count">
                                                 <option value="12">12个词 (128位熵)</option>
@@ -70,7 +70,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="language">
-                                                <i class="fas fa-language me-2"></i>语言
+                                                <i class="fas fa-language me-2"></i><span data-i18n="language">语言</span>
                                             </label>
                                             <select class="form-select" id="language">
                                                 <option value="中文简体">简体中文</option>
@@ -88,11 +88,11 @@
 
                                 <div class="text-center mt-4">
                                     <button type="button" id="generate-btn" class="btn btn-primary btn-lg me-5">
-                                        <i class="fas fa-random me-2"></i>生成助记词
+                                        <i class="fas fa-random me-2"></i><span data-i18n="generate_btn">生成助记词</span>
                                     </button>
                                     <button type="button" id="security-analysis-btn"
                                             class="btn btn-outline-info btn-lg">
-                                        <i class="fas fa-shield-alt me-2"></i>安全性分析
+                                        <i class="fas fa-shield-alt me-2"></i><span data-i18n="security_analysis_btn">安全性分析</span>
                                     </button>
                                 </div>
                             </form>
@@ -102,26 +102,26 @@
                             </div>
 
                             <div id="seed-container" class="seed-container" style="display: none;">
-                                <h5><i class="fas fa-key me-2"></i>派生种子 (H)</h5>
+                                <h5><i class="fas fa-key me-2"></i><span data-i18n="derived_seed">派生种子 (H)</span></h5>
                                 <div id="seed-value"></div>
                             </div>
 
                             <div class="text-center mt-3" id="copy-container" style="display: none;">
                                 <button id="copy-btn" class="btn btn-outline-primary me-2">
-                                    <i class="fas fa-copy me-2"></i>复制助记词
+                                    <i class="fas fa-copy me-2"></i><span data-i18n="copy_btn">复制助记词</span>
                                 </button>
                                 <button id="copy-seed-btn" class="btn btn-outline-secondary" style="display: none;">
-                                    <i class="fas fa-copy me-2"></i>复制种子
+                                    <i class="fas fa-copy me-2"></i><span data-i18n="copy_seed_btn">复制种子</span>
                                 </button>
                             </div>
 
                             <div class="mt-4 security-metrics" style="display: none;">
-                                <h4 class="mb-4">助记词安全性分析</h4>
+                                <h4 class="mb-4"><span data-i18n="security_analysis">助记词安全性分析</span></h4>
 
                                 <!-- 熵值信息 -->
                                 <div class="entropy-info mb-3">
-                                    <span>熵值: <span id="entropy-value">0</span> 位</span>
-                                    <span>强度: <span id="strength-text">未生成</span></span>
+                                    <span><span data-i18n="entropy_value">熵值</span>: <span id="entropy-value">0</span> <span data-i18n="bits">位</span></span>
+                                    <span><span data-i18n="strength">强度</span>: <span id="strength-text" data-i18n="not_generated">未生成</span></span>
                                 </div>
 
                                 <!-- 强度计量条 -->
@@ -131,7 +131,7 @@
 
                                 <!-- 破解时间估计 -->
                                 <div class="mb-4">
-                                    <strong>估计破解时间: </strong><span id="crack-time">未生成</span>
+                                    <strong><span data-i18n="crack_time">估计破解时间</span>: </strong><span id="crack-time" data-i18n="not_generated">未生成</span>
                                 </div>
 
                                 <!-- 图表容器 - 增加上边距 -->
@@ -150,11 +150,11 @@
 
                                 <!-- 安全提示 -->
                                 <div class="alert alert-info mt-3">
-                                    <strong>安全提示:</strong>
+                                    <strong><span data-i18n="security_tips">安全提示</span>:</strong>
                                     <ul>
-                                        <li>12个词的助记词提供约128位熵，24个词提供约256位熵</li>
-                                        <li>您的助记词应当保存在离线环境中，永远不要通过电子方式共享</li>
-                                        <li>使用硬件钱包可以大大提高您的资金安全性</li>
+                                        <li><span data-i18n="security_tip_1">12个词的助记词提供约128位熵，24个词提供约256位熵</span></li>
+                                        <li><span data-i18n="security_tip_2">您的助记词应当保存在离线环境中，永远不要通过电子方式共享</span></li>
+                                        <li><span data-i18n="security_tip_3">使用硬件钱包可以大大提高您的资金安全性</span></li>
                                     </ul>
                                 </div>
                             </div>
@@ -165,24 +165,24 @@
                              aria-labelledby="validate-tab">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                请输入BIP39标准助记词进行验证。验证成功后将显示派生的种子。
+                                <span data-i18n="validate_info">请输入BIP39标准助记词进行验证。验证成功后将显示派生的种子。</span>
                             </div>
 
                             <form id="validate-form">
                                 <div class="form-group">
                                     <label for="input-mnemonic">
-                                        <i class="fas fa-key me-2"></i>输入助记词
+                                        <i class="fas fa-key me-2"></i><span data-i18n="input_mnemonic">输入助记词</span>
                                     </label>
                                     <textarea class="form-control" id="input-mnemonic" rows="3"
-                                              placeholder="请输入空格分隔的助记词，例如：apple banana cherry ..."></textarea>
-                                    <small class="form-text text-muted">
+                                              placeholder="请输入空格分隔的助记词，例如：apple banana cherry ..." data-i18n="mnemonic_placeholder"></textarea>
+                                    <small class="form-text text-muted" data-i18n="mnemonic_tip">
                                         请确保单词的准确性和顺序，单词间使用空格分隔
                                     </small>
                                 </div>
 
                                 <div class="form-group mt-3">
                                     <label for="validate-language">
-                                        <i class="fas fa-language me-2"></i>助记词语言
+                                        <i class="fas fa-language me-2"></i><span data-i18n="mnemonic_language">助记词语言</span>
                                     </label>
                                     <select class="form-select" id="validate-language">
                                         <option value="中文简体">简体中文</option>
@@ -192,14 +192,14 @@
                                         <option value="西班牙语">Español</option>
                                         <option value="意大利语">Italiano</option>
                                         <option value="日语">日本語</option>
-                                        <option value="韩语">한국어</option>
+                                        <option value="韩语">한国어</option>
 
                                     </select>
                                 </div>
 
                                 <div class="text-center mt-4">
-                                    <button type="button" id="validate-btn" class="btn btn-primary">
-                                        <i class="fas fa-check-circle me-2"></i>验证助记词
+                                    <button type="button" id="validate-btn" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-check-circle me-2"></i><span data-i18n="validate_btn">验证助记词</span>
                                     </button>
                                 </div>
                             </form>
@@ -214,7 +214,7 @@
                              aria-labelledby="blockchain-tab">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                从助记词生成各种区块链地址，并查询余额和交易记录。请确保您的助记词安全，不要在不信任的环境中输入。
+                                <span data-i18n="blockchain_info">从助记词生成各种区块链地址，并查询余额和交易记录。请确保您的助记词安全，不要在不信任的环境中输入。</span>
                             </div>
 
                             <form id="blockchain-form">
@@ -222,13 +222,13 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="blockchain-mnemonic">
-                                                <i class="fas fa-key me-2"></i>输入助记词
+                                                <i class="fas fa-key me-2"></i><span data-i18n="input_mnemonic">输入助记词</span>
                                             </label>
                                             <textarea class="form-control" id="blockchain-mnemonic" rows="3"
-                                                      placeholder="请输入助记词，单词间用空格分隔"></textarea>
+                                                      placeholder="请输入助记词，单词间用空格分隔" data-i18n="blockchain_mnemonic_placeholder"></textarea>
                                             <small class="form-text text-muted">
                                                 <i class="fas fa-shield-alt me-1"></i>
-                                                助记词非常重要，请确保在安全的环境中操作
+                                                <span data-i18n="mnemonic_security_tip">助记词非常重要，请确保在安全的环境中操作</span>
                                             </small>
                                         </div>
                                     </div>
@@ -238,7 +238,7 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="blockchain-language">
-                                                <i class="fas fa-language me-2"></i>助记词语言
+                                                <i class="fas fa-language me-2"></i><span data-i18n="mnemonic_language">助记词语言</span>
                                             </label>
                                             <select class="form-select" id="blockchain-language">
                                                 <option value="中文简体">简体中文</option>
@@ -256,22 +256,22 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="blockchain-passphrase">
-                                                <i class="fas fa-lock me-2"></i>密码(可选)
+                                                <i class="fas fa-lock me-2"></i><span data-i18n="passphrase_optional">密码(可选)</span>
                                             </label>
                                             <input type="password" class="form-control" id="blockchain-passphrase"
-                                                   placeholder="BIP39密码短语(可选)">
+                                                   placeholder="BIP39密码短语(可选)" data-i18n="passphrase_placeholder">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="blockchain-count">
-                                                <i class="fas fa-hashtag me-2"></i>每个链生成地址数量
+                                                <i class="fas fa-hashtag me-2"></i><span data-i18n="address_count">每个链生成地址数量</span>
                                             </label>
                                             <select class="form-select" id="blockchain-count">
-                                                <option value="1">1个地址</option>
-                                                <option value="3">3个地址</option>
-                                                <option value="5" selected>5个地址</option>
-                                                <option value="10">10个地址</option>
+                                                <option value="1" data-i18n="address_count_1">1个地址</option>
+                                                <option value="3" data-i18n="address_count_3">3个地址</option>
+                                                <option value="5" selected data-i18n="address_count_5">5个地址</option>
+                                                <option value="10" data-i18n="address_count_10">10个地址</option>
                                             </select>
                                         </div>
                                     </div>
@@ -280,29 +280,29 @@
                                 <div class="row mt-3">
                                     <div class="col-md-12">
                                         <label class="mb-2">
-                                            <i class="fas fa-coins me-2"></i>选择区块链
+                                            <i class="fas fa-coins me-2"></i><span data-i18n="select_blockchain">选择区块链</span>
                                         </label>
                                         <div id="blockchain-options" class="d-flex flex-wrap gap-2">
                                             <!-- 区块链选项将动态加载 -->
                                             <div class="spinner-border spinner-border-sm text-primary me-2"
                                                  role="status">
-                                                <span class="visually-hidden">加载中...</span>
+                                                <span class="visually-hidden" data-i18n="loading">加载中...</span>
                                             </div>
-                                            <span>加载区块链列表...</span>
+                                            <span data-i18n="loading_blockchain_list">加载区块链列表...</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="text-center mt-4">
                                     <button type="button" id="generate-addresses-btn" class="btn btn-primary">
-                                        <i class="fas fa-cog me-2"></i>生成区块链地址
+                                        <i class="fas fa-cog me-2"></i><span data-i18n="generate_blockchain_address">生成区块链地址</span>
                                     </button>
                                 </div>
                             </form>
 
                             <div id="blockchain-result" class="mt-4" style="display: none;">
                                 <!-- 区块链地址生成结果 -->
-                                <h4 class="mb-3"><i class="fas fa-address-card me-2"></i>生成的区块链地址</h4>
+                                <h4 class="mb-3"><i class="fas fa-address-card me-2"></i><span data-i18n="generated_addresses">生成的区块链地址</span></h4>
 
                                 <ul class="nav nav-pills mb-3" id="blockchain-addresses-tabs" role="tablist">
                                     <!-- 区块链标签页将动态生成 -->
@@ -314,13 +314,13 @@
                             </div>
 
                             <div id="address-query-container" class="mt-5" style="display: none;">
-                                <h4 class="mb-3"><i class="fas fa-search-dollar me-2"></i>查询地址余额与交易</h4>
+                                <h4 class="mb-3"><i class="fas fa-search-dollar me-2"></i><span data-i18n="query_address_balance">查询地址余额与交易</span></h4>
 
                                 <div class="row">
                                     <div class="col-md-5">
                                         <div class="form-group">
                                             <label for="query-chain">
-                                                <i class="fas fa-project-diagram me-2"></i>选择区块链
+                                                <i class="fas fa-project-diagram me-2"></i><span data-i18n="select_blockchain">选择区块链</span>
                                             </label>
                                             <select class="form-select" id="query-chain">
                                                 <!-- 区块链选项将动态生成 -->
@@ -330,14 +330,14 @@
                                     <div class="col-md-7">
                                         <div class="form-group">
                                             <label for="query-address">
-                                                <i class="fas fa-fingerprint me-2"></i>输入地址
+                                                <i class="fas fa-fingerprint me-2"></i><span data-i18n="input_address">输入地址</span>
                                             </label>
                                             <div class="input-group">
                                                 <input type="text" class="form-control" id="query-address"
-                                                       placeholder="输入要查询的区块链地址">
+                                                       placeholder="输入要查询的区块链地址" data-i18n="address_placeholder">
                                                 <button class="btn btn-outline-primary" type="button"
                                                         id="query-address-btn">
-                                                    <i class="fas fa-search me-1"></i>查询
+                                                    <i class="fas fa-search me-1"></i><span data-i18n="query_btn">查询</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -352,7 +352,7 @@
                                                     data-bs-toggle="tab"
                                                     data-bs-target="#address-balance-content" type="button" role="tab"
                                                     aria-controls="address-balance-content" aria-selected="true">
-                                                <i class="fas fa-wallet me-2"></i>余额信息
+                                                <i class="fas fa-wallet me-2"></i><span data-i18n="balance_info">余额信息</span>
                                             </button>
                                         </li>
                                         <li class="nav-item" role="presentation">
@@ -360,7 +360,7 @@
                                                     data-bs-target="#address-transactions-content" type="button"
                                                     role="tab"
                                                     aria-controls="address-transactions-content" aria-selected="false">
-                                                <i class="fas fa-exchange-alt me-2"></i>交易历史
+                                                <i class="fas fa-exchange-alt me-2"></i><span data-i18n="transaction_history">交易历史</span>
                                             </button>
                                         </li>
                                     </ul>
@@ -377,25 +377,25 @@
                                             <!-- 交易历史将在这里显示 -->
                                             <div id="transactions-container">
                                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h5 class="mb-0">交易记录</h5>
+                                                    <h5 class="mb-0" data-i18n="transaction_records">交易记录</h5>
                                                     <div>
                                                         <select id="transaction-limit"
                                                                 class="form-select form-select-sm d-inline-block"
                                                                 style="width: auto;">
-                                                            <option value="5">显示5条</option>
-                                                            <option value="10" selected>显示10条</option>
-                                                            <option value="20">显示20条</option>
-                                                            <option value="50">显示50条</option>
+                                                            <option value="5" data-i18n="show_5">显示5条</option>
+                                                            <option value="10" selected data-i18n="show_10">显示10条</option>
+                                                            <option value="20" data-i18n="show_20">显示20条</option>
+                                                            <option value="50" data-i18n="show_50">显示50条</option>
                                                         </select>
                                                         <button id="refresh-transactions-btn"
                                                                 class="btn btn-sm btn-outline-primary ms-2">
-                                                            <i class="fas fa-sync-alt me-1"></i>刷新
+                                                            <i class="fas fa-sync-alt me-1"></i><span data-i18n="refresh">刷新</span>
                                                         </button>
                                                     </div>
                                                 </div>
                                                 <div id="transactions-list-container">
                                                     <div class="text-center my-4">
-                                                        <p>点击"查询交易"按钮获取交易历史</p>
+                                                        <p data-i18n="click_query_tip">点击"查询交易"按钮获取交易历史</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -483,6 +483,18 @@
             });
         });
 
+        // 当语言切换时更新页面内容
+        document.addEventListener('languageChanged', function(event) {
+            // 更新选项文本
+            updateSelectOptions();
+        });
+        
+        // 更新下拉选项的文本
+        function updateSelectOptions() {
+            // 这里可以添加针对特定选择框的文本更新逻辑
+            // 例如根据当前语言更新词数选项等
+        }
+        
         // 生成助记词函数
         function generateMnemonic() {
             const wordCount = document.getElementById('word-count').value;
@@ -778,7 +790,7 @@
                         chainOption.innerHTML = `
                         <input class="form-check-input blockchain-check" type="checkbox" 
                                id="chain-${chain}" value="${chain}" checked>
-                        <label class="form-check-label" for="chain-${chain}">${chain}</label>
+                        <label class="form-check-label" for="chain-${chain}" data-i18n="${chain.toLowerCase()}">${chain}</label>
                     `;
                         chainsContainer.appendChild(chainOption);
                     });
@@ -791,8 +803,12 @@
                         const option = document.createElement('option');
                         option.value = chain;
                         option.textContent = chain;
+                        option.setAttribute('data-i18n', chain.toLowerCase());
                         queryChainSelect.appendChild(option);
                     });
+                    
+                    // 更新翻译
+                    updatePageText();
                 })
                 .catch(error => {
                     console.error('加载区块链列表失败:', error);
@@ -912,7 +928,7 @@
                             type="button" role="tab" 
                             aria-controls="chain-content-${chain}" 
                             aria-selected="${index === 0 ? 'true' : 'false'}">
-                        ${chain}
+                        <span data-i18n="${chain.toLowerCase()}">${chain}</span>
                     </button>
                 `;
                         tabsContainer.appendChild(tabItem);
@@ -1062,6 +1078,9 @@
                             queryBlockchainAddress();
                         });
                     });
+                    
+                    // 更新翻译
+                    updatePageText();
                 })
                 .catch(error => {
                     console.error('生成区块链地址失败:', error);
@@ -1160,6 +1179,9 @@
 
                     // 启用交易历史标签
                     document.getElementById('address-transactions-tab').classList.remove('disabled');
+                    
+                    // 更新翻译
+                    updatePageText();
                 })
                 .catch(error => {
                     console.error('查询地址失败:', error);
@@ -1203,7 +1225,7 @@
                 <table class="table table-sm table-borderless mb-0">
                     <tr>
                         <td style="width:100px">区块链:</td>
-                        <td>${addressInfo.区块链}</td>
+                        <td><span data-i18n="${addressInfo.区块链.toLowerCase()}">${addressInfo.区块链}</span></td>
                     </tr>
                     <tr>
                         <td>地址:</td>
@@ -1441,6 +1463,9 @@
 
             // 更新界面
             document.getElementById('transactions-list-container').innerHTML = transactionsHtml;
+            
+            // 更新翻译
+            updatePageText();
         }
 
         // 分析助记词熵值和安全性
@@ -1711,14 +1736,14 @@
                         },
                         yAxis: {
                             type: 'value',
-                            name: '强度水平 (%)',
+                            name: '相对强度水平 (%)',
                             max: 100
                         },
                         series: [{
                             name: '熵值分布',
                             type: 'bar',
                             // 更新为合理的强度数据（示例）
-                            data: [50, 65, 80, 90, 100],
+                            data: [80, 85, 90, 95, 100],
                             itemStyle: {
                                 color: function (params) {
                                     const colorList = [
@@ -1967,160 +1992,157 @@
 
 {% block additional_styles %}
     .mnemonic-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
     }
     /* 增加卡片体的高度 */
     .card-body {
-    min-height: auto; /* 设置最小高度，保证卡片有足够空间 */
-    padding-bottom: 10px; /* 增加底部内边距，提供更多空间感 */
+        min-height: auto; /* 设置最小高度，保证卡片有足够空间 */
+        padding-bottom: 10px; /* 增加底部内边距，提供更多空间感 */
     }
-
 
     @font-face {
-    font-family: 'Times-Roman';
-    src: url('{{ url_for("static", filename="webfonts/Times-Roman.ttf") }}') format('truetype');
-    font-weight: normal;
-    font-style: italic;
+        font-family: 'Times-Roman';
+        src: url('{{ url_for("static", filename="webfonts/Times-Roman.ttf") }}') format('truetype');
+        font-weight: normal;
+        font-style: italic;
     }
     .mnemonic-word {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    transition: all 0.3s;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        transition: all 0.3s;
     }
     .mnemonic-word:hover {
-    background-color: #007bff;
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .tab-pane {
-    padding: 1.5rem;
+        padding: 1.5rem;
     }
     .nav-tabs {
-    border-bottom: 2px solid #dee2e6;
+        border-bottom: 2px solid #dee2e6;
     }
     .nav-tabs .nav-link {
-    color: black;
-    font-weight: 600;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    margin-right: 5px;
-    border-radius: 5px 5px 0 0;
+        color: black;
+        font-weight: 600;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        margin-right: 5px;
+        border-radius: 5px 5px 0 0;
     }
     .nav-tabs .nav-link:hover {
-    background-color: #e9ecef;
-    border-color: #dee2e6;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
     }
     .nav-tabs .nav-link.active {
-    font-weight: bold;
-    color: white;
-    background-color: #007bff;
-    border-color: #007bff;
+        font-weight: bold;
+        color: white;
+        background-color: var(--bs-primary, #0d6efd); /* 添加蓝色背景 */
+        border-color: var(--bs-primary, #0d6efd);
     }
     .form-group {
-    margin-bottom: 1rem;
+        margin-bottom: 1rem;
     }
     #result-container {
-    min-height: 150px;
-    margin-top: 1rem;
+        min-height: 150px;
+        margin-top: 1rem;
     }
     .copy-btn {
-    cursor: pointer;
-    transition: all 0.3s;
+        cursor: pointer;
+        transition: all 0.3s;
     }
     .copy-btn:hover {
-    color: #007bff;
+        color: var(--blue);
     }
     #upload-progress {
-    display: none;
-    margin-top: 10px;
+        display: none;
+        margin-top: 10px;
     }
     .seed-container {
-    word-break: break-all;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 15px;
-    margin-top: 20px;
-    font-family: monospace;
+        word-break: break-all;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 20px;
+        font-family: monospace;
     }
     .bip39-badge {
-    background-color: #28a745;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    margin-left: 10px;
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-left: 10px;
     }
     .validate-section {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
     }
     .chart-container {
-    position: relative;
-    height: 300px;
-    width: 100%;
-    margin-bottom: 20px;
+        position: relative;
+        height: 300px;
+        width: 100%;
+        margin-bottom: 20px;
     }
     .security-metrics {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
     }
     .entropy-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
     }
     .strength-meter {
-    height: 10px;
-    width: 100%;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    overflow: hidden;
+        height: 10px;
+        width: 100%;
+        background-color: #e9ecef;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        overflow: hidden;
     }
     .strength-level {
-    height: 100%;
-    transition: width 0.3s ease;
+        height: 100%;
+        transition: width 0.3s ease;
     }
     .strength-weak { background-color: #dc3545; }
     .strength-medium { background-color: #ffc107; }
     .strength-strong { background-color: #28a745; }
     .strength-very-strong { background-color: #20c997; }
 
-
     /* 添加数字专用样式 */
     .crypto-number {
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-weight: 600;
-    color: #0066cc;
-    letter-spacing: 0.5px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: 600;
+        color: var(--blue);
+        letter-spacing: 0.5px;
     }
 
     .math-exp {
-    font-family: 'Cambria Math', 'Times New Roman', serif;
-    font-style: italic;
-    color: #006400;
+        font-family: 'Cambria Math', 'Times New Roman', serif;
+        font-style: italic;
+        color: #006400;
     }
 
     /* 修改表格式布局一致性 */
     #crack-time .row {
-    margin-bottom: 8px;
-    align-items: center;
+        margin-bottom: 8px;
+        align-items: center;
     }
 
     #crack-time .col-md-9 {
-    padding-top: 4px;
-    padding-bottom: 4px;
+        padding-top: 4px;
+        padding-bottom: 4px;
     }
 {% endblock %}

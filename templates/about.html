@@ -9,47 +9,47 @@
         <div class="col-lg-12">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i>关于区块链助记词安全性测试系统</h3>
+                    <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i><span data-i18n="about_system">关于区块链助记词安全性测试系统</span></h3>
                 </div>
                 <div class="card-body">
                     <div class="about-section">
-                        <h2><i class="fas fa-question-circle me-2"></i>什么是助记词？</h2>
-                        <p><strong>助记词</strong>(Mnemonic)是一种用于记忆和恢复密钥的技术，在加密货币、密码管理和信息安全领域被广泛应用。
+                        <h2><i class="fas fa-question-circle me-2"></i><span data-i18n="what_is_mnemonic">什么是助记词？</span></h2>
+                        <p data-i18n="mnemonic_desc_1"><strong>助记词</strong>(Mnemonic)是一种用于记忆和恢复密钥的技术，在加密货币、密码管理和信息安全领域被广泛应用。
                         </p>
-                        <p>传统的私钥或种子通常是一长串随机字节，难以记忆和抄写。<strong>助记词</strong>通过将这些随机字节映射为一组人类可读的单词，使得备份和恢复过程变得更加简单和可靠。
+                        <p data-i18n="mnemonic_desc_2">传统的私钥或种子通常是一长串随机字节，难以记忆和抄写。<strong>助记词</strong>通过将这些随机字节映射为一组人类可读的单词，使得备份和恢复过程变得更加简单和可靠。
                         </p>
-                        <p>
+                        <p data-i18n="mnemonic_desc_3">
                             在比特币和以太坊等区块链系统中，通常使用12-24个随机单词作为钱包的备份方式，这些<strong>助记词</strong>可以完全恢复用户的私钥和资产。
                         </p>
                     </div>
 
                     <div class="about-section">
                         <h2>
-                            <i class="fas fa-shield-alt me-2"></i>BIP39标准
-                            <span class="bip39-badge"><i class="fas fa-check me-1"></i>已支持</span>
+                            <i class="fas fa-shield-alt me-2"></i><span data-i18n="bip39_standard">BIP39标准</span>
+                            <span class="bip39-badge"><i class="fas fa-check me-1"></i><span data-i18n="supported">已支持</span></span>
                         </h2>
-                        <p>BIP39（Bitcoin Improvement Proposal
+                        <p data-i18n="bip39_desc">BIP39（Bitcoin Improvement Proposal
                             39）是比特币改进提案之一，定义了生成确定性钱包的助记词标准。本系统现已完全支持BIP39标准</p>
 
-                        <h5 class="mt-4 mb-3"><i class="fas fa-cogs me-2"></i>BIP39助记词生成流程</h5>
+                        <h5 class="mt-4 mb-3"><i class="fas fa-cogs me-2"></i><span data-i18n="bip39_generation_process">BIP39助记词生成流程</span></h5>
                         <ul class="process-list">
                             <li>
-                                <strong>生成熵</strong> ： 使用密码学安全的随机数生成器创建一定位数（128-256位）的熵源
+                                <strong data-i18n="generate_entropy">生成熵</strong><span data-i18n="generate_entropy_desc"> ： 使用密码学安全的随机数生成器创建一定位数（128-256位）的熵源</span>
                             </li>
                             <li>
-                                <strong>添加校验和</strong> ： 对熵进行SHA-256哈希运算，取结果的前(熵位数/32)位作为校验和
+                                <strong data-i18n="add_checksum">添加校验和</strong><span data-i18n="add_checksum_desc"> ： 对熵进行SHA-256哈希运算，取结果的前(熵位数/32)位作为校验和</span>
                             </li>
                             <li>
-                                <strong>拆分比特</strong> ： 将熵和校验和组合后拆分为每组11位的段
+                                <strong data-i18n="split_bits">拆分比特</strong><span data-i18n="split_bits_desc"> ： 将熵和校验和组合后拆分为每组11位的段</span>
                             </li>
                             <li>
-                                <strong>映射到单词</strong> ： 将每个11位段映射到预定义的2048个单词列表中对应的单词
+                                <strong data-i18n="map_to_words">映射到单词</strong><span data-i18n="map_to_words_desc"> ： 将每个11位段映射到预定义的2048个单词列表中对应的单词</span>
                             </li>
                             <li>
-                                <strong>生成种子</strong> ： 使用PBKDF2函数（使用2048轮HMAC-SHA512）将助记词转换为512位的种子
+                                <strong data-i18n="generate_seed">生成种子</strong><span data-i18n="generate_seed_desc"> ： 使用PBKDF2函数（使用2048轮HMAC-SHA512）将助记词转换为512位的种子</span>
                             </li>
                             <li>
-                                <strong>派生密钥</strong> ： 基于生成的种子派生密钥（通常使用BIP32标准）
+                                <strong data-i18n="derive_keys">派生密钥</strong><span data-i18n="derive_keys_desc"> ： 基于生成的种子派生密钥（通常使用BIP32标准）</span>
                             </li>
                         </ul>
                         <!--
@@ -101,43 +101,43 @@
                     </div>
 
                     <div class="about-section">
-                        <h2><i class="fas fa-lightbulb me-2"></i>系统特点</h2>
+                        <h2><i class="fas fa-lightbulb me-2"></i><span data-i18n="system_features">系统特点</span></h2>
                         <ul class="feature-list">
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <strong>标准兼容</strong>：完全符合BIP39标准，可用于实际加密货币钱包
+                                <strong data-i18n="standard_compatible">标准兼容</strong><span data-i18n="standard_compatible_desc">：完全符合BIP39标准，可用于实际加密货币钱包</span>
                             </li>
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <strong>多语言支持</strong>：支持中文简体、中文繁体和英文等多种语言
+                                <strong data-i18n="multi_language">多语言支持</strong><span data-i18n="multi_language_desc">：支持中文简体、中文繁体和英文等多种语言</span>
                             </li>
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <strong>种子派生</strong>：生成标准的512位种子，可用于后续密钥派生
+                                <strong data-i18n="seed_derivation">种子派生</strong><span data-i18n="seed_derivation_desc">：生成标准的512位种子，可用于后续密钥派生</span>
                             </li>
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <strong>自定义词库</strong>：支持用户上传自定义词库（注：自定义词库不符合BIP39标准）
+                                <strong data-i18n="custom_wordlist">自定义词库</strong><span data-i18n="custom_wordlist_desc">：支持用户上传自定义词库（注：自定义词库不符合BIP39标准）</span>
                             </li>
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <strong>助记词验证</strong>：提供BIP39助记词的验证功能，确保助记词有效
+                                <strong data-i18n="mnemonic_validation">助记词验证</strong><span data-i18n="mnemonic_validation_desc">：提供BIP39助记词的验证功能，确保助记词有效</span>
                             </li>
                         </ul>
                     </div>
 
                     <div class="about-section">
-                        <h2><i class="fas fa-shield-alt me-2"></i>安全建议</h2>
+                        <h2><i class="fas fa-shield-alt me-2"></i><span data-i18n="security_recommendations">安全建议</span></h2>
                         <div class="alert alert-warning">
-                            <h4><i class="fas fa-exclamation-triangle me-2"></i>重要安全提示</h4>
-                            <p>虽然本系统实现了标准的BIP39，但对于实际加密资产管理，我们仍有以下安全建议：</p>
+                            <h4><i class="fas fa-exclamation-triangle me-2"></i><span data-i18n="important_security_tips">重要安全提示</span></h4>
+                            <p data-i18n="security_intro">虽然本系统实现了标准的BIP39，但对于实际加密资产管理，我们仍有以下安全建议：</p>
                             <ol>
-                                <li>使用离线设备（如硬件钱包）生成和存储真正重要的助记词</li>
-                                <li>不要在联网设备上输入已有的助记词，除非确实需要访问相关资产</li>
-                                <li>使用物理方式（如纸质记录、金属板）备份助记词</li>
-                                <li>将备份存放在安全的物理位置，考虑多地保存</li>
-                                <li>不要向任何人透露您的助记词，任何要求您提供助记词的人都可能是诈骗者</li>
-                                <li>考虑使用BIP39密码短语提供额外安全层级</li>
+                                <li data-i18n="security_tip_1">使用离线设备（如硬件钱包）生成和存储真正重要的助记词</li>
+                                <li data-i18n="security_tip_2">不要在联网设备上输入已有的助记词，除非确实需要访问相关资产</li>
+                                <li data-i18n="security_tip_3">使用物理方式（如纸质记录、金属板）备份助记词</li>
+                                <li data-i18n="security_tip_4">将备份存放在安全的物理位置，考虑多地保存</li>
+                                <li data-i18n="security_tip_5">不要向任何人透露您的助记词，任何要求您提供助记词的人都可能是诈骗者</li>
+                                <li data-i18n="security_tip_6">考虑使用BIP39密码短语提供额外安全层级</li>
                             </ol>
                         </div>
                     </div>
@@ -145,42 +145,6 @@
             </div>
         </div>
     </div>
-
-    <!-- <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card card-about">
-                <div class="card-body text-center">
-                    <div class="card-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <h4>使用场景</h4>
-                    <p>加密货币钱包、密码管理器、安全备份、密钥恢复、分布式身份等多种区块链和密码学场景</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card card-about">
-                <div class="card-body text-center">
-                    <div class="card-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <h4>技术实现</h4>
-                    <p>基于Flask框架开发，使用Python的mnemonic库实现BIP39标准，确保与区块链技术兼容</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card card-about">
-                <div class="card-body text-center">
-                    <div class="card-icon">
-                        <i class="fas fa-code-branch"></i>
-                    </div>
-                    <h4>开源项目</h4>
-                    <p>本项目采用开源模式，欢迎贡献代码和提出改进建议，共同提升系统安全性和可用性</p>
-                </div>
-            </div>
-        </div>
-    </div> -->
 {% endblock %}
 
 
@@ -189,77 +153,77 @@
 
 {% block additional_styles %}
     .about-section {
-    margin-bottom: 3rem;
+        margin-bottom: 3rem;
     }
     .about-section h2 {
-    color: #007bff;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
+        color: var(--blue);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
     }
     .about-section i {
-    color: #007bff;
+        color: var(--blue);
     }
     .feature-list {
-    list-style-type: none;
-    padding-left: 0;
+        list-style-type: none;
+        padding-left: 0;
     }
     .feature-list li {
-    margin-bottom: 1rem;
-    padding-left: 2rem;
-    position: relative;
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+        position: relative;
     }
     .feature-list li i {
-    position: absolute;
-    left: 0;
-    top: 0.25rem;
+        position: absolute;
+        left: 0;
+        top: 0.25rem;
     }
     .card-about {
-    height: 100%;
-    transition: all 0.3s;
+        height: 100%;
+        transition: all 0.3s;
     }
     .card-about:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
     .card-about .card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: #007bff;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--blue);
     }
     .bip39-badge {
-    display: inline-block;
-    background-color: #28a745;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    margin-left: 10px;
-    vertical-align: middle;
+        display: inline-block;
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-left: 10px;
+        vertical-align: middle;
     }
     .process-list {
-    counter-reset: step-counter;
-    list-style-type: none;
-    padding-left: 0;
+        counter-reset: step-counter;
+        list-style-type: none;
+        padding-left: 0;
     }
     .process-list li {
-    position: relative;
-    padding-left: 3rem;
-    margin-bottom: 1.5rem;
-    counter-increment: step-counter;
+        position: relative;
+        padding-left: 3rem;
+        margin-bottom: 1.5rem;
+        counter-increment: step-counter;
     }
     .process-list li::before {
-    content: counter(step-counter);
-    position: absolute;
-    left: 0;
-    top: 0;
-    background-color: #007bff;
-    color: white;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 2rem;
-    font-weight: bold;
+        content: counter(step-counter);
+        position: absolute;
+        left: 0;
+        top: 0;
+        background-color: var(--blue);
+        color: white;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 2rem;
+        font-weight: bold;
     }
 {% endblock %}

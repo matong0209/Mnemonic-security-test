@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
     <!-- 引入SweetAlert2 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert2.min.css') }}">
+    <!-- 引入自定义样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
     <!-- 自定义样式 -->
     <style>
         /* 添加自定义字体 */
@@ -99,6 +101,30 @@
             border-color: #0062cc;
         }
 
+        /* 语言切换按钮样式 */
+        .language-switch {
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .language-switch .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.85);
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-left: 5px;
+            transition: all 0.3s;
+        }
+        
+        .language-switch .btn:hover,
+        .language-switch .btn.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
         {% block additional_styles %}{% endblock %}
 
     </style>
@@ -108,7 +134,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('index') }}">
-            <i class="fas fa-key me-2"></i>区块链助记词安全性测试系统
+            <i class="fas fa-key me-2"></i><span data-i18n="system_title">区块链助记词安全性测试系统</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,19 +144,19 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('index') }}">
-                        <i class="fas fa-home me-1"></i>首页
+                        <i class="fas fa-home me-1"></i><span data-i18n="nav_home">首页</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/mnemonic' %}active{% endif %}"
                        href="{{ url_for('mnemonic') }}">
-                        <i class="fas fa-brain me-1"></i>助记词生成
+                        <i class="fas fa-brain me-1"></i><span data-i18n="nav_mnemonic">助记词生成</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/about' %}active{% endif %}"
                        href="{{ url_for('about') }}">
-                        <i class="fas fa-info-circle me-1"></i>关于系统
+                        <i class="fas fa-info-circle me-1"></i><span data-i18n="nav_about">关于系统</span>
                     </a>
                 </li>
                 <!-- 新增：用户登录后的下拉菜单 -->
@@ -143,7 +169,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('profile') }}">
-                                    <i class="fas fa-id-card me-2"></i>个人资料
+                                    <i class="fas fa-id-card me-2"></i><span data-i18n="nav_profile">个人资料</span>
                                 </a>
                             </li>
                             <li>
@@ -151,12 +177,17 @@
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                                    <i class="fas fa-sign-out-alt me-2"></i><span data-i18n="nav_logout">退出登录</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
                 {% endif %}
+                <!-- 语言切换 -->
+                <li class="nav-item language-switch">
+                    <button class="btn btn-sm" id="lang-zh">中</button>
+                    <button class="btn btn-sm" id="lang-en">EN</button>
+                </li>
             </ul>
         </div>
     </div>
@@ -172,7 +203,7 @@
 <!-- 页脚 -->
 <footer class="footer">
     <div class="container text-center">
-        <p class="mb-0">&copy; 2025 区块链助记词安全性测试系统 | 版权所有</p>
+        <p class="mb-0" data-i18n="footer_copyright">&copy; 2025 区块链助记词安全性测试系统 | 版权所有</p>
     </div>
 </footer>
 
@@ -180,6 +211,24 @@
 <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/sweetalert2.all.min.js') }}"></script>
+<!-- 引入国际化支持 -->
+<script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+<script>
+    // 初始化语言切换功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const langZh = document.getElementById('lang-zh');
+        const langEn = document.getElementById('lang-en');
+        
+        // 设置语言切换事件
+        langZh.addEventListener('click', function() {
+            window.i18n.switchLanguage('zh');
+        });
+        
+        langEn.addEventListener('click', function() {
+            window.i18n.switchLanguage('en');
+        });
+    });
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html> 
