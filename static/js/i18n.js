@@ -135,12 +135,6 @@ const translations = {
         'bitcoin': '比特币',
         'ethereum': '以太坊',
         'dogecoin': '狗狗币',
-        'litecoin': '莱特币',
-        'bitcoin_cash': '比特币现金',
-        'ripple': '瑞波币',
-        'cardano': '卡尔达诺',
-        'polkadot': '波卡',
-        'solana': '索拉纳',
     },
     'en': {
         // Navigation menu
@@ -351,22 +345,43 @@ function switchLanguage(lang) {
 
 // 获取翻译文本
 function getTranslation(key) {
-    return translations[currentLanguage][key] || key;
+    if (!key) return '';
+    
+    // 确保key是小写的，因为我们的翻译键都是小写的
+    const lowerKey = key.toLowerCase();
+    
+    // 尝试获取当前语言的翻译
+    if (translations[currentLanguage] && translations[currentLanguage][lowerKey] !== undefined) {
+        return translations[currentLanguage][lowerKey];
+    }
+    
+    // 如果找不到翻译，返回原始key
+    return key;
 }
 
 // 更新页面上的所有文本
 function updatePageText() {
+    // 更新带有data-i18n属性的元素
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
-        if (key && translations[currentLanguage][key]) {
+        if (key) {
             // 检查是否为占位符文本
             if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
                 if (element.getAttribute('placeholder')) {
-                    element.setAttribute('placeholder', translations[currentLanguage][key]);
+                    element.setAttribute('placeholder', getTranslation(key) || key);
                 }
             } else {
-                element.textContent = translations[currentLanguage][key];
+                // 如果找不到翻译，使用键名作为默认值
+                element.textContent = getTranslation(key) || element.textContent;
             }
+        }
+    });
+    
+    // 更新select元素中的选项
+    document.querySelectorAll('select option[data-i18n]').forEach(option => {
+        const key = option.getAttribute('data-i18n');
+        if (key) {
+            option.textContent = getTranslation(key) || option.textContent;
         }
     });
 }

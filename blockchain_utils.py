@@ -7,12 +7,6 @@ import secrets
 import base58
 import ecdsa
 
-# 启用以太坊账户的助记词功能
-# 注意：这是未经审计的功能，仅供测试使用
-# try:
-#     Account.enable_unaudited_hdwallet_features()
-# except Exception as e:
-#     print(f"警告: 无法启用以太坊助记词功能: {str(e)}")
 
 # API密钥和端点
 ETHERSCAN_API_KEY = "B38I8TH52C94KMBSIQ9PB11N9DHGCZ5HSJ"  # Etherscan API密钥
@@ -20,8 +14,18 @@ ETHERSCAN_API_KEY = "B38I8TH52C94KMBSIQ9PB11N9DHGCZ5HSJ"  # Etherscan API密钥
 # 获取BlockCypher API密钥: https://www.blockcypher.com/
 BLOCKCYPHER_API_KEY = "fde919e9087d414e9f8c4e3ecebe3a55"
 
-# 支持的区块链列表
-SUPPORTED_CHAINS = ["比特币", "以太坊", "狗狗币"]
+# 支持的区块链列表 (使用英文标识符)
+SUPPORTED_CHAINS = ["bitcoin", "ethereum", "dogecoin"]
+
+# 区块链名称映射表 (用于后端代码中的中英文转换)
+CHAIN_NAME_MAP = {
+    "bitcoin": "比特币",
+    "ethereum": "以太坊",
+    "dogecoin": "狗狗币",
+    "比特币": "bitcoin",
+    "以太坊": "ethereum",
+    "狗狗币": "dogecoin"
+}
 
 # 语言映射表
 BIP39_LANGUAGE_MAP = {
@@ -37,24 +41,24 @@ BIP39_LANGUAGE_MAP = {
 
 # API端点
 API_ENDPOINTS = {
-    "比特币": "https://blockchain.info/address/{address}?format=json",
+    "bitcoin": "https://blockchain.info/address/{address}?format=json",
     # 每日请求限制: 100000个请求
-    "以太坊": "https://api.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey=" + ETHERSCAN_API_KEY,
-    "狗狗币": "https://api.blockcypher.com/v1/doge/main/addrs/{address}/balance"  # 每天1000个请求,每小时100个请求,每秒3个请求
+    "ethereum": "https://api.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey=" + ETHERSCAN_API_KEY,
+    "dogecoin": "https://api.blockcypher.com/v1/doge/main/addrs/{address}/balance"  # 每天1000个请求,每小时100个请求,每秒3个请求
 }
 
 # 备用免费API端点(不需要API密钥)
 BACKUP_API_ENDPOINTS = {
-    "比特币": "https://blockchain.info/address/{address}?format=json",
-     "以太坊": "https://api.blockcypher.com/v1/eth/main/addrs/{address}/balance",
-    "狗狗币": "https://api.blockcypher.com/v1/doge/main/addrs/{address}/balance"
+    "bitcoin": "https://blockchain.info/address/{address}?format=json",
+    "ethereum": "https://api.blockcypher.com/v1/eth/main/addrs/{address}/balance",
+    "dogecoin": "https://api.blockcypher.com/v1/doge/main/addrs/{address}/balance"
 }
 
 # 区块浏览器的链接
 BLOCKCHAIN_EXPLORERS = {
-    "比特币": "https://www.blockchain.com/explorer/addresses/btc/{address}",
-    "以太坊": "https://etherscan.io/address/{address}",
-    "狗狗币": "https://blockchair.com/dogecoin/address/{address}"
+    "bitcoin": "https://www.blockchain.com/explorer/addresses/btc/{address}",
+    "ethereum": "https://etherscan.io/address/{address}",
+    "dogecoin": "https://blockchair.com/dogecoin/address/{address}"
 }
 
 
@@ -169,7 +173,7 @@ def generate_addresses_from_mnemonic(mnemonic, passphrase="", chains=None, accou
             chain_addresses = []
 
             try:
-                if chain_name == "以太坊":
+                if chain_name == "ethereum":
                     for address_index in range(address_count):
                         try:
                             # 尝试使用账户的助记词功能
@@ -225,7 +229,7 @@ def generate_addresses_from_mnemonic(mnemonic, passphrase="", chains=None, accou
                                 "错误": f"生成以太坊地址 #{address_index} 失败: {str(e)}"
                             })
 
-                elif chain_name == "比特币":
+                elif chain_name == "bitcoin":
                     # 使用我们的自定义方法生成比特币地址
                     for address_index in range(address_count):
                         try:
@@ -259,7 +263,7 @@ def generate_addresses_from_mnemonic(mnemonic, passphrase="", chains=None, accou
                                 "错误": f"生成比特币地址 #{address_index} 失败: {str(e)}"
                             })
 
-                elif chain_name == "狗狗币":
+                elif chain_name == "dogecoin":
                     # 使用我们的自定义方法生成狗狗币地址
                     for address_index in range(address_count):
                         try:
@@ -325,6 +329,7 @@ def query_address_balance(chain_name, address):
     # 支持性检查
     if chain_name not in API_ENDPOINTS:
         return {"error": "不支持的区块链类型", "余额": 0.0}
+        
     # 校验地址
     if not is_valid_address(chain_name, address):
         return {"error": "地址格式错误或校验失败", "余额": 0.0}
@@ -346,82 +351,60 @@ def query_address_balance(chain_name, address):
         # 解析不同区块链的数据
         result = {
             "地址": address,
-            "区块链": chain_name,
+            "区块链": chain_name,  # 使用英文标识符
             "浏览器链接": BLOCKCHAIN_EXPLORERS[chain_name].format(address=address),
             "余额": 0.0  # 默认为0，确保始终有余额字段
         }
 
         # 根据不同区块链解析余额和交易
-        if chain_name == "比特币":
+        if chain_name == "bitcoin":
             try:
                 result["余额"] = float(data.get("final_balance", 0)) / 100000000  # 转换为BTC单位
             except (ValueError, TypeError):
                 result["余额"] = 0.0
-
             result["交易数量"] = data.get("n_tx", 0)
-            try:
-                result["总接收"] = float(data.get("total_received", 0)) / 100000000
-            except (ValueError, TypeError):
-                result["总接收"] = 0.0
+            result["总接收"] = float(data.get("total_received", 0)) / 100000000
+            result["总发送"] = float(data.get("total_sent", 0)) / 100000000
 
-            try:
-                result["总发送"] = float(data.get("total_sent", 0)) / 100000000
-            except (ValueError, TypeError):
-                result["总发送"] = 0.0
-
-        elif chain_name == "以太坊":
+        elif chain_name == "ethereum":
             if data.get("status") == "1":
                 try:
-                    # 1. 解析余额
-                    balance = int(data.get("result", "0"))
-                    result["余额"] = float(Web3.from_wei(balance, "ether"))
-
-                    # 2. 调用 Etherscan proxy 接口获取交易数量（Nonce）
-                    proxy_url = (
-                        f"https://api.etherscan.io/api"
-                        f"?module=proxy"
-                        f"&action=eth_getTransactionCount"
-                        f"&address={address}"
-                        f"&tag=latest"
-                        f"&apikey={ETHERSCAN_API_KEY}"
-                    )
-                    proxy_resp = requests.get(proxy_url).json()
-                    if proxy_resp.get("result"):
-                        # result 是十六进制字符串，例如 "0x10"
-                        result["交易数量"] = int(proxy_resp["result"], 16)
-                    else:
-                        result["交易数量"] = 0
-
-                except (ValueError, TypeError, requests.RequestException) as e:
-                    # 如果出错，仍然保证有余额字段
-                    result["余额"] = 0.0
-                    result["交易数量"] = 0
-                    result["错误"] = f"解析以太坊数据失败: {e}"
-            else:
-                # status != "1" 时也尝试设置默认值
-                result["余额"] = 0.0
-                result["交易数量"] = 0
-                result["错误"] = data.get("message", "查询失败")
-        elif chain_name == "狗狗币":
-            if response.status_code == 200:
-                try:
-                    result["余额"] = float(data.get("balance", 0)) / 100000000  # 转换为DOGE单位
+                    result["余额"] = float(data.get("result", 0)) / 10**18  # 转换为ETH单位
                 except (ValueError, TypeError):
                     result["余额"] = 0.0
-
-                result["交易数量"] = data.get("n_tx", 0)
-            elif "error" in data:
-                # 尝试使用备用API
-                return _try_backup_api(chain_name, address)
+                
+                # 尝试获取交易数量
+                try:
+                    tx_count_url = f"https://api.etherscan.io/api?module=proxy&action=eth_getTransactionCount&address={address}&tag=latest&apikey={ETHERSCAN_API_KEY}"
+                    tx_count_response = requests.get(tx_count_url)
+                    if tx_count_response.status_code == 200:
+                        tx_data = tx_count_response.json()
+                        if tx_data.get("status") == "1" or tx_data.get("result"):
+                            # 将16进制转换为10进制
+                            result["交易数量"] = int(tx_data.get("result", "0x0"), 16)
+                except Exception:
+                    result["交易数量"] = 0
             else:
-                result["余额"] = 0.0
+                result["交易数量"] = 0
                 result["错误"] = data.get("message", "查询失败")
+        elif chain_name == "dogecoin":
+            if response.status_code == 200:
+                try:
+                    result["余额"] = float(data.get("final_balance", 0)) / 100000000  # 转换为DOGE单位
+                except (ValueError, TypeError):
+                    result["余额"] = 0.0
+                result["交易数量"] = data.get("n_tx", 0) if "n_tx" in data else len(data.get("txrefs", []))
+                result["总接收"] = float(data.get("total_received", 0)) / 100000000 if "total_received" in data else 0.0
+                result["总发送"] = float(data.get("total_sent", 0)) / 100000000 if "total_sent" in data else 0.0
 
+        # 进行风险评估
+        risk_assessment = assess_address_risk(chain_name, address, result.get("交易数量"), result.get("余额"))
+        
         return result
-
     except Exception as e:
+        print(f"查询地址余额时出错: {str(e)}")
         # 尝试使用备用API
-        return _try_backup_api(chain_name, address, error=str(e))
+        return _try_backup_api(chain_name, address)
 
 
 # ---------- 地址校验部分 ----------
@@ -446,146 +429,139 @@ def is_valid_doge_address(address: str) -> bool:
 
 
 def is_valid_address(chain: str, address: str) -> bool:
-    if chain == "比特币":
+    if chain == "bitcoin":
         return is_valid_btc_address(address)
-    elif chain == "以太坊":
+    elif chain == "ethereum":
         return is_valid_eth_address(address)
-    elif chain == "狗狗币":
+    elif chain == "dogecoin":
         return is_valid_doge_address(address)
     return False
 
 
-def _try_backup_api(chain_name, address, error=None):
+def _try_backup_api(chain_name, address):
     """
-    当主要API失败时，尝试使用备用API查询
+    当主API失败时，尝试使用备用API查询地址信息
     
     参数:
         chain_name (str): 区块链名称
         address (str): 要查询的地址
-        error (str): 主API的错误信息
         
     返回:
         dict: 包含余额和交易信息的字典
     """
     if chain_name not in BACKUP_API_ENDPOINTS:
-        return {
-            "地址": address,
-            "区块链": chain_name,
-            "错误": error or "主API查询失败",
-            "浏览器链接": BLOCKCHAIN_EXPLORERS[chain_name].format(address=address),
-            "提示": "您可以通过浏览器链接手动查看该地址信息",
-            "余额": 0.0  # 确保有余额字段
-        }
-
-    # 构建备用API URL
-    backup_url = BACKUP_API_ENDPOINTS[chain_name].format(address=address)
+        return {"error": "不支持的区块链类型", "余额": 0.0}
 
     try:
+        # 构建API URL
+        api_url = BACKUP_API_ENDPOINTS[chain_name].format(address=address)
+        
         # 发送API请求
-        response = requests.get(backup_url)
-
+        response = requests.get(api_url)
+        
+        # 检查是否请求成功
         if response.status_code != 200:
-            return {
-                "地址": address,
-                "区块链": chain_name,
-                "浏览器链接": BLOCKCHAIN_EXPLORERS[chain_name].format(address=address),
-                "状态": "查询失败",
-                "提示": "无法从备用API获取数据，请通过浏览器链接手动查看",
-                "余额": 0.0  # 确保有余额字段
-            }
-
+            return {"error": f"API请求失败，状态码: {response.status_code}", "余额": 0.0}
+        
         data = response.json()
-
-        # 解析不同区块链的备用API数据
+        
+        # 解析不同区块链的数据
         result = {
             "地址": address,
-            "区块链": chain_name,
+            "区块链": chain_name,  # 使用英文标识符
             "浏览器链接": BLOCKCHAIN_EXPLORERS[chain_name].format(address=address),
-            "API来源": "备用API",
             "余额": 0.0  # 默认为0，确保始终有余额字段
         }
-
-        if chain_name == "比特币":
+        
+        if chain_name == "bitcoin":
             try:
                 result["余额"] = float(data.get("final_balance", 0)) / 100000000  # 转换为BTC单位
             except (ValueError, TypeError):
                 result["余额"] = 0.0
-
             result["交易数量"] = data.get("n_tx", 0)
-
-        elif chain_name == "以太坊" or chain_name == "狗狗币":
+        
+        elif chain_name == "ethereum" or chain_name == "dogecoin":
             # Blockchair API格式
             if "data" in data and address in data["data"]:
                 address_data = data["data"][address]
                 try:
                     result["余额"] = float(address_data.get("address", {}).get("balance", 0)) / (
-                        10 ** 18 if chain_name == "以太坊" else 10 ** 8)
+                        10 ** 18 if chain_name == "ethereum" else 10 ** 8)
                 except (ValueError, TypeError, KeyError):
                     result["余额"] = 0.0
-
-                result["交易数量"] = address_data.get("address", {}).get("transaction_count", 0)
-            else:
-                result["余额"] = 0.0
-                result["错误"] = "从备用API获取数据失败"
-
+                
+                result["交易数量"] = len(address_data.get("transactions", []))
+        
+        # 进行风险评估
+        risk_assessment = assess_address_risk(chain_name, address, result.get("交易数量"), result.get("余额"))
+        
         return result
-
     except Exception as e:
+        print(f"备用API查询失败: {str(e)}")
         return {
             "地址": address,
             "区块链": chain_name,
-            "错误": f"备用API查询失败: {str(e)}",
             "浏览器链接": BLOCKCHAIN_EXPLORERS[chain_name].format(address=address),
             "余额": 0.0,
-            "提示": "所有API查询均失败，请通过浏览器链接手动查看该地址信息"
+            "错误": f"备用API查询失败: {str(e)}"
         }
 
 
 def assess_address_risk(chain_name, address, transaction_count=None, balance=None):
     """
-    评估地址的风险因素
+    评估区块链地址的风险等级
     
     参数:
         chain_name (str): 区块链名称
         address (str): 要评估的地址
-        transaction_count (int): 交易数量，如果已知
-        balance (float): 余额，如果已知
+        transaction_count (int): 交易数量
+        balance (float): 账户余额
         
     返回:
-        dict: 风险评估结果
+        dict: 包含风险评估结果的字典
     """
     risk_level = "低"
     risk_factors = []
     suggestions = []
-
-    # 1. 检查地址是否为空地址或全零地址
-    if address == "0x0000000000000000000000000000000000000000" or address == "1111111111111111111114oLvT2":
-        risk_level = "高"
-        risk_factors.append("该地址是特殊地址（零地址或燃烧地址）")
-        suggestions.append("不要向此地址发送资金")
-
-    # 2. 检查余额和交易历史
-    if balance is not None and balance > 0:
-        if transaction_count is not None:
-            if transaction_count == 0 and balance > 0:
+    
+    # 1. 评估交易历史
+    if transaction_count is not None:
+        if transaction_count == 0:
+            risk_factors.append("该地址没有交易历史，可能是新地址或未使用的地址")
+            suggestions.append("在发送大额资金前，建议先进行小额测试交易")
+        elif transaction_count < 5:
+            risk_factors.append("该地址交易历史较少")
+            suggestions.append("交易历史有限，建议谨慎评估")
+    
+    # 2. 评估余额
+    if balance is not None:
+        if balance > 0:
+            if chain_name == "bitcoin" and balance > 1.0:
                 risk_level = "中"
-                risk_factors.append("地址有余额但无交易历史，可能是冷钱包或闲置地址")
-                suggestions.append("确认该地址确实属于预期的接收方")
-
-            elif transaction_count > 1000:
+                risk_factors.append("该地址持有较大金额的比特币")
+                suggestions.append("考虑使用硬件钱包存储大额资产")
+            elif chain_name == "ethereum" and balance > 10.0:
                 risk_level = "中"
-                risk_factors.append("地址交易频繁，可能是交易所地址或热钱包")
-                suggestions.append("热钱包通常安全性较低，建议不要长期存储大量资产")
-
+                risk_factors.append("该地址持有较大金额的以太坊")
+                suggestions.append("考虑使用多签名钱包增强安全性")
+            elif chain_name == "dogecoin" and balance > 10000.0:
+                risk_level = "中"
+                risk_factors.append("该地址持有较大金额的狗狗币")
+                suggestions.append("考虑分散资产到多个地址")
+    
     # 3. 提供链上隐私建议
-    if chain_name == "比特币":
+    if chain_name == "bitcoin":
         risk_factors.append("比特币是伪匿名的，所有交易都在公共账本上可见")
         suggestions.append("考虑使用混币服务或闪电网络以增强隐私")
-
-    elif chain_name == "以太坊":
+    
+    elif chain_name == "ethereum":
         risk_factors.append("以太坊上的所有交易和智能合约交互都是公开的")
         suggestions.append("敏感交易考虑使用支持隐私的解决方案")
-
+    
+    # 4. 提供一般性安全建议
+    suggestions.append("使用强密码和双因素认证保护您的钱包")
+    suggestions.append("定期备份您的私钥或助记词")
+    
     return {
         "风险等级": risk_level,
         "风险因素": risk_factors,
@@ -612,7 +588,7 @@ def query_address_transactions(chain_name, address, limit=10):
     error_message = None
 
     try:
-        if chain_name == "比特币":
+        if chain_name == "bitcoin":
             # 使用blockchain.info API查询比特币交易
             api_url = f"https://blockchain.info/rawaddr/{address}?limit={limit}"
             response = requests.get(api_url)
@@ -622,57 +598,53 @@ def query_address_transactions(chain_name, address, limit=10):
                 tx_list = data.get("txs", [])
 
                 for tx in tx_list:
-                    # 计算交易方向和金额
                     tx_hash = tx.get("hash", "")
                     time = tx.get("time", 0)
-
-                    # 分析输入和输出，确定交易方向
-                    is_sender = False
-                    is_receiver = False
-                    total_input = 0
-                    total_output = 0
-
-                    # 分析输入
-                    for inp in tx.get("inputs", []):
-                        prev_out = inp.get("prev_out", {})
-                        if prev_out.get("addr") == address:
-                            is_sender = True
-                            total_input += prev_out.get("value", 0)
-
-                    # 分析输出
-                    for out in tx.get("out", []):
-                        if out.get("addr") == address:
-                            is_receiver = True
-                            total_output += out.get("value", 0)
-
-                    # 确定交易方向和净额
+                    time_formatted = datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S') if time else "未知时间"
+                    
+                    # 计算交易金额和方向
+                    inputs = tx.get("inputs", [])
+                    outputs = tx.get("out", [])
+                    
+                    # 判断交易方向
+                    is_sender = any(inp.get("prev_out", {}).get("addr") == address for inp in inputs)
+                    is_receiver = any(out.get("addr") == address for out in outputs)
+                    
                     if is_sender and is_receiver:
                         direction = "自我交易"
-                        net_amount = (total_output - total_input) / 100000000  # 转换为BTC
+                        # 计算净支出
+                        sent_value = sum(inp.get("prev_out", {}).get("value", 0) for inp in inputs 
+                                        if inp.get("prev_out", {}).get("addr") == address)
+                        received_value = sum(out.get("value", 0) for out in outputs 
+                                            if out.get("addr") == address)
+                        value = (received_value - sent_value) / 100000000
                     elif is_sender:
                         direction = "发送"
-                        net_amount = -total_input / 100000000  # 转换为BTC
-                    elif is_receiver:
+                        # 计算发送金额
+                        value = -sum(inp.get("prev_out", {}).get("value", 0) for inp in inputs 
+                                    if inp.get("prev_out", {}).get("addr") == address) / 100000000
+                    else:  # is_receiver
                         direction = "接收"
-                        net_amount = total_output / 100000000  # 转换为BTC
-                    else:
-                        continue  # 跳过与此地址无关的交易
-
+                        # 计算接收金额
+                        value = sum(out.get("value", 0) for out in outputs 
+                                    if out.get("addr") == address) / 100000000
+                    
+                    # 确认数
+                    confirmations = tx.get("block_height", 0)
+                    
                     transactions.append({
                         "交易哈希": tx_hash,
+                        "链接": f"https://www.blockchain.com/explorer/transactions/btc/{tx_hash}",
                         "时间": time,
-                        "时间格式化": _format_timestamp(time),
+                        "时间格式化": time_formatted,
                         "方向": direction,
-                        "金额": abs(net_amount),
-                        "净额": net_amount,
-                        "确认数": tx.get("confirmations", 0),
-                        "区块高度": tx.get("block_height", "未确认"),
-                        "链接": f"https://www.blockchain.com/explorer/transactions/btc/{tx_hash}"
+                        "金额": value,
+                        "确认数": confirmations
                     })
             else:
                 error_message = f"API请求失败，状态码: {response.status_code}"
 
-        elif chain_name == "以太坊":
+        elif chain_name == "ethereum":
             # 使用Etherscan API查询以太坊交易
             api_url = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset={limit}&sort=desc&apikey={ETHERSCAN_API_KEY}"
             response = requests.get(api_url)
@@ -684,40 +656,38 @@ def query_address_transactions(chain_name, address, limit=10):
 
                     for tx in tx_list:
                         tx_hash = tx.get("hash", "")
-                        time = int(tx.get("timeStamp", "0"))
-                        from_addr = tx.get("from", "").lower()
-                        to_addr = tx.get("to", "").lower()
-                        value = int(tx.get("value", "0"))
-
-                        # 确定交易方向
-                        if from_addr == address.lower() and to_addr == address.lower():
+                        time = int(tx.get("timeStamp", 0))
+                        time_formatted = datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S') if time else "未知时间"
+                        
+                        # 判断交易方向
+                        if tx.get("from", "").lower() == address.lower() and tx.get("to", "").lower() == address.lower():
                             direction = "自我交易"
-                        elif from_addr == address.lower():
+                            value = 0
+                        elif tx.get("from", "").lower() == address.lower():
                             direction = "发送"
-                        else:
+                            value = -float(tx.get("value", 0)) / 10**18
+                        else:  # tx.get("to", "").lower() == address.lower()
                             direction = "接收"
-
-                        # 转换为ETH
-                        amount = float(Web3.from_wei(value, "ether"))
-
+                            value = float(tx.get("value", 0)) / 10**18
+                        
+                        # 确认数
+                        confirmations = tx.get("confirmations", 0)
+                        
                         transactions.append({
                             "交易哈希": tx_hash,
+                            "链接": f"https://etherscan.io/tx/{tx_hash}",
                             "时间": time,
-                            "时间格式化": _format_timestamp(time),
+                            "时间格式化": time_formatted,
                             "方向": direction,
-                            "金额": amount,
-                            "净额": -amount if direction == "发送" else amount,
-                            "gas价格": int(tx.get("gasPrice", "0")) / 10 ** 9,  # Gwei
-                            "gas使用量": int(tx.get("gasUsed", "0")),
-                            "确认数": "已确认" if int(tx.get("confirmations", "0")) > 0 else "未确认",
-                            "链接": f"https://etherscan.io/tx/{tx_hash}"
+                            "金额": value,
+                            "确认数": confirmations
                         })
                 else:
-                    error_message = data.get("message", "API请求失败")
+                    error_message = data.get("message", "查询失败")
             else:
                 error_message = f"API请求失败，状态码: {response.status_code}"
 
-        elif chain_name == "狗狗币":
+        elif chain_name == "dogecoin":
             # 使用chain.so API查询狗狗币交易
             api_url = f"https://api.blockcypher.com/v1/doge/main/addrs/{address}?limit={limit}"
             response = requests.get(api_url)
@@ -742,29 +712,30 @@ def query_address_transactions(chain_name, address, limit=10):
                         elif tx.get("tx_output_n", -1) == -1 and tx.get("tx_input_n", -1) != -1:
                             # 出账交易
                             direction = "发送"
+                            value = -value
                         else:
                             # 自交易
-                            direction = "自交易"
+                            direction = "自我交易"
+                        
+                        time_formatted = datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S') if time else "未知时间"
+                        
                         transactions.append({
                             "交易哈希": tx_hash,
+                            "链接": f"https://blockchair.com/dogecoin/transaction/{tx_hash}",
                             "时间": time,
-                            "时间格式化": _format_timestamp(time),
+                            "时间格式化": time_formatted,
                             "方向": direction,
                             "金额": value,
-                            "净额": value if direction == "接收" else -value,
-                            "确认数": tx.get("confirmations", 0),
-                            "链接": f"https://blockchair.com/dogecoin/transaction/{tx_hash}"
+                            "确认数": tx.get("confirmations", 0)
                         })
-
-
                 else:
-                    error_message = "API请求失败"
+                    error_message = "未找到交易记录"
             else:
                 error_message = f"API请求失败，状态码: {response.status_code}"
 
         # 如果出错且没有获取到交易记录，尝试使用备用API
         if error_message and not transactions:
-            if chain_name == "比特币":
+            if chain_name == "bitcoin":
                 # Blockchair备用API
                 backup_api_url = f"https://api.blockchair.com/bitcoin/dashboards/address/{address}?limit={limit}"
                 response = requests.get(backup_api_url)
@@ -774,17 +745,16 @@ def query_address_transactions(chain_name, address, limit=10):
                     if "data" in data and address in data["data"]:
                         tx_list = data["data"][address].get("transactions", [])
 
-                        # 由于备用API只提供了交易哈希列表，我们只能提供有限的信息
                         for tx_hash in tx_list:
                             transactions.append({
                                 "交易哈希": tx_hash,
-                                "链接": f"https://www.blockchain.com/explorer/transactions/btc/{tx_hash}",
+                                "链接": f"https://blockchair.com/bitcoin/transaction/{tx_hash}",
                                 "备注": "使用备用API，详细信息需通过链接查看"
                             })
 
                         error_message = None  # 清除错误信息
 
-            elif chain_name == "以太坊":
+            elif chain_name == "ethereum":
                 # Blockchair备用API
                 backup_api_url = f"https://api.blockchair.com/ethereum/dashboards/address/{address}?limit={limit}"
                 response = requests.get(backup_api_url)
@@ -804,7 +774,7 @@ def query_address_transactions(chain_name, address, limit=10):
 
                         error_message = None  # 清除错误信息
 
-            elif chain_name == "狗狗币":
+            elif chain_name == "dogecoin":
                 # Blockchair备用API
                 backup_api_url = f"https://api.blockchair.com/dogecoin/dashboards/address/{address}?limit={limit}"
                 response = requests.get(backup_api_url)
@@ -823,26 +793,27 @@ def query_address_transactions(chain_name, address, limit=10):
 
                         error_message = None  # 清除错误信息
 
+        # 准备返回结果
+        result = {
+            "区块链": chain_name,  # 使用英文标识符
+            "地址": address,
+            "交易": transactions,
+            "状态": "成功" if not error_message else "失败" if not transactions else "部分成功"
+        }
+
+        if error_message:
+            result["错误"] = error_message
+
+        return result
     except Exception as e:
-        error_message = f"查询交易记录时出错: {str(e)}"
-
-    # 准备返回结果
-    result = {
-        "地址": address,
-        "区块链": chain_name,
-        "交易记录数": len(transactions),
-        "交易": transactions,
-        "浏览器链接": BLOCKCHAIN_EXPLORERS[chain_name].format(address=address),
-        "限制": limit
-    }
-
-    if error_message:
-        result["错误"] = error_message
-        result["状态"] = "部分成功" if transactions else "失败"
-    else:
-        result["状态"] = "成功"
-
-    return result
+        print(f"查询交易记录时出错: {str(e)}")
+        return {
+            "区块链": chain_name,
+            "地址": address,
+            "交易": [],
+            "状态": "失败",
+            "错误": f"查询失败: {str(e)}"
+        }
 
 
 def _format_timestamp(timestamp):

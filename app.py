@@ -577,7 +577,7 @@ def get_languages():
 # 支持的链
 @app.route('/api/supported_chains')
 def get_chains():
-    return jsonify({"chains":blockchain_utils.SUPPORTED_CHAINS})
+    return jsonify({"chains": blockchain_utils.SUPPORTED_CHAINS})
 
 # 从助记词派生地址
 @app.route('/api/generate_addresses', methods=['POST'])
